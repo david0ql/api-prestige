@@ -1065,9 +1065,13 @@ describe('Prestige Gold · flujo completo (e2e)', () => {
     const url: string = pub.body.timeline[0].urls.web;
     expect((await api.http.get(url)).status).toBe(200);
     // RNF-009: los videos se sirven por rangos (reproducción/adelanto en móvil).
-    const videoItem = (story.timeline as { kind: string; urls: { original: string } }[]).find((m) => m.kind === 'VIDEO');
+    const videoItem = (
+      story.timeline as { kind: string; urls: { original: string } }[]
+    ).find((m) => m.kind === 'VIDEO');
     expect(videoItem).toBeTruthy();
-    const partial = await api.http.get(videoItem!.urls.original).set('Range', 'bytes=0-9');
+    const partial = await api.http
+      .get(videoItem!.urls.original)
+      .set('Range', 'bytes=0-9');
     expect(partial.status).toBe(206);
     expect(partial.headers['content-range']).toMatch(/^bytes 0-9\//);
     expect(

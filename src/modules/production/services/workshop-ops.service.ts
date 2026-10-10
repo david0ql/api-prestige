@@ -338,7 +338,7 @@ export class WorkshopOpsService {
       type: exceeds ? AlertType.REQUEST_DEVIATION : AlertType.PENDING_OPERATION,
       severity: exceeds ? AlertSeverity.WARNING : AlertSeverity.INFO,
       title: `Solicitud ${saved.number} de ${material.name}${exceeds ? ' fuera de estándar' : ''}`,
-      message: `${dto.grams} g · ${dto.reason}${exceeds ? ` · desviación ${deviationPct}% sobre estándar` : ''}`,
+      message: `${dto.grams} g · ${dto.reason}${exceeds ? ` · desviación ${deviationPct?.toFixed(1)}% sobre estándar` : ''}`,
       entityType: 'MaterialRequest',
       entityId: saved.id,
       workshopId: user.workshopId,

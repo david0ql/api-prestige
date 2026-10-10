@@ -261,6 +261,8 @@ export class MediaService {
           ? (m.webPath ?? m.storagePath)
           : m.storagePath;
     const mime = rel === m.storagePath ? m.mimeType : 'image/webp';
+    if (!(await this.storage.exists(rel)))
+      throw new NotFoundException('Archivo no disponible');
     return { path: this.storage.abs(rel), mime, name: m.originalName };
   }
 
