@@ -974,19 +974,29 @@ describe('Prestige Gold · flujo completo (e2e)', () => {
       await api.get('gerencia', '/api/reports/profitability?groupBy=product')
     ).body;
     expect(profit.summary.revenue).toBe(15000000);
-    expect(profit.summary.productionLaborCost).toBe(2070000);
+    // Mano de obra aprobada de las órdenes de este flujo (otras suites comparten la base).
+    const laborOf = async (id: string) =>
+      (await api.get('finanzas', `/api/finance/costs?orderId=${id}&type=LABOR`)).body.items.reduce((sum: number, c: { amount: number }) => sum + c.amount, 0);
+    expect((await laborOf(order1.id)) + (await laborOf(childOrderId))).toBe(2070000);
+    expect(profit.summary.productionLaborCost).toBeGreaterThanOrEqual(2070000);
     // RF-030: rentabilidad por producto y por taller.
     expect(profit.rows).toEqual([expect.objectContaining({ group: 'Cadena Gucci 24K', revenue: 15000000 })]);
     const byWorkshop = (await api.get('gerencia', '/api/reports/profitability?groupBy=workshop')).body;
     expect(byWorkshop.rows).toEqual([expect.objectContaining({ group: 'TC · Colmenares', revenue: 15000000 })]);
     expect(byWorkshop.rows[0].grossProfit).toBe(byWorkshop.rows[0].revenue - byWorkshop.rows[0].cogs);
-    expect(profit.summary.consolidatedNet).toBeCloseTo(
-      15000000 -
-        Number(profit.summary.productionMaterialCost) -
-        2070000 -
-        Number(profit.summary.operatingExpenses),
-      2,
-    );
+    // CA-011 recalculado de forma independiente desde los registros contables del mes:
+    // ventas − costo de material − mano de obra aprobada − gastos operativos.
+    const month = profit.filters.from as string;
+    const to = profit.filters.to as string;
+    const costs = (await api.get('finanzas', `/api/finance/costs?from=${month}&to=${to}&pageSize=200`)).body.items as { type: string; amount: number }[];
+    const material = costs.filter((c) => c.type === 'MATERIAL').reduce((a, c) => a + c.amount, 0);
+    const labor = costs.filter((c) => c.type === 'LABOR').reduce((a, c) => a + c.amount, 0);
+    const txs = (await api.get('finanzas', `/api/finance/transactions?type=EXPENSE&from=${month}&to=${to}&pageSize=200`)).body.items as { amount: number; status: string; source: string; category: { isOperatingExpense: boolean } }[];
+    const opex = txs.filter((t) => t.status === 'POSTED' && t.source !== 'REVERSAL' && t.category.isOperatingExpense).reduce((a, t) => a + t.amount, 0);
+    expect(profit.summary.productionMaterialCost).toBeCloseTo(material, 2);
+    expect(profit.summary.productionLaborCost).toBeCloseTo(labor, 2);
+    expect(profit.summary.operatingExpenses).toBeCloseTo(opex, 2);
+    expect(profit.summary.consolidatedNet).toBeCloseTo(15000000 - material - labor - opex, 2);
     const xlsx = await api.http
       .get('/api/reports/productivity/export?format=xlsx')
       .set('Authorization', `Bearer ${await api.token('gerencia')}`)
@@ -1131,6 +1141,8 @@ describe('Prestige Gold · flujo completo (e2e)', () => {
   });
 
   it('RF-028 / RN-020 · ingresos, egresos, pagos a talleres y cierre de período', async () => {
+    // Línea base: otras suites pueden haber registrado movimientos en la misma base.
+    const base = (await api.get('finanzas', '/api/finance/summary?from=2026-10-01&to=2026-10-31')).body;
     const cats: { id: string; code: string }[] = (
       await api.get('finanzas', '/api/finance-categories')
     ).body;
@@ -1176,19 +1188,17 @@ describe('Prestige Gold · flujo completo (e2e)', () => {
         (p: { workshop: { code: string } }) => p.workshop.code === 'TJV',
       ).balance,
     ).toBe(0);
-    expect(
-      payables.find(
-        (p: { workshop: { code: string } }) => p.workshop.code === 'TC',
-      ).balance,
-    ).toBe(2000000);
+    const tc = payables.find((p: { workshop: { code: string } }) => p.workshop.code === 'TC');
+    expect(tc.balance).toBe(tc.approvedLabor - tc.paid);
+    expect(tc.approvedLabor).toBeGreaterThanOrEqual(2000000);
     const summary = (
       await api.get(
         'finanzas',
         '/api/finance/summary?from=2026-10-01&to=2026-10-31',
       )
     ).body;
-    expect(summary.income).toBe(5000000);
-    expect(summary.expense).toBe(220000);
+    expect(summary.income - base.income).toBe(0);
+    expect(summary.expense - base.expense).toBe(220000);
     const close = await api.post('finanzas', '/api/finance/period-closes', {
       period: '2026-09',
     });
@@ -1219,7 +1229,7 @@ describe('Prestige Gold · flujo completo (e2e)', () => {
           '/api/finance/summary?from=2026-10-01&to=2026-10-31',
         )
       ).body.expense,
-    ).toBe(70000);
+    ).toBe(base.expense + 70000);
   });
 
   it('Cancelación con control de materiales y alertas operativas', async () => {

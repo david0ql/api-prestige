@@ -136,8 +136,8 @@ export function mp4File() {
 export function byCode<T extends { code: string }>(
   items: T[],
   code: string,
-): T & { id: string } {
+): T & { id: string; [key: string]: any } {
   const found = items.find((i) => i.code === code);
   if (!found) throw new Error(`No existe ${code}`);
-  return found as T & { id: string };
+  return found as T & { id: string; [key: string]: any };
 }

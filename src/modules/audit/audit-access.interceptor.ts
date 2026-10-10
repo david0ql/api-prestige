@@ -5,7 +5,7 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable, tap } from 'rxjs';
+import { concatMap, Observable } from 'rxjs';
 import { AUDIT_ACCESS_KEY } from '../../common/decorators/audit-access.decorator';
 import { AuditAction } from '../../common/enums/domain.enums';
 import { AuditService } from './audit.service';
@@ -25,17 +25,16 @@ export class AuditAccessInterceptor implements NestInterceptor {
     );
     if (!entityType) return next.handle();
     const req = context.switchToHttp().getRequest();
+    // El registro se escribe ANTES de responder: un acceso crítico nunca queda sin bitácora.
     return next.handle().pipe(
-      tap(() => {
-        void this.audit.log({
+      concatMap(async (data: unknown) => {
+        await this.audit.log({
           action: AuditAction.ACCESS,
           entityType,
           entityId: req.params?.id ?? null,
-          description: `${req.method} ${req.originalUrl ?? req.url}`.slice(
-            0,
-            300,
-          ),
+          description: `${req.method} ${req.originalUrl ?? req.url}`.slice(0, 300),
         });
+        return data;
       }),
     );
   }
