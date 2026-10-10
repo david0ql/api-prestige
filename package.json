@@ -21,7 +21,8 @@
     "seed": "ts-node -r tsconfig-paths/register src/database/seeds/run-seed.ts",
     "seed:demo": "ts-node -r tsconfig-paths/register src/database/seeds/run-seed.ts --demo",
     "db:reset": "ts-node -r tsconfig-paths/register src/database/seeds/reset-db.ts",
-    "demo": "node scripts/demo-scenario.mjs"
+    "demo": "node scripts/demo-scenario.mjs",
+    "mail:verify": "node dist/scripts/verify-mail.js"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.0",

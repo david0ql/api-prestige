@@ -18,11 +18,31 @@ export class MailService {
       from: string;
     }>('smtp');
     this.from = smtp.from;
+    const production = config.get<string>('nodeEnv') === 'production';
     this.transporter = createTransport({
       host: smtp.host,
       port: smtp.port,
       secure: smtp.port === 465,
+      // En producción las credenciales nunca viajan en claro: STARTTLS obligatorio (o TLS implícito en 465).
+      requireTLS: production && smtp.port !== 465,
+      tls: { minVersion: 'TLSv1.2' },
       auth: smtp.user ? { user: smtp.user, pass: smtp.password } : undefined,
+    });
+  }
+
+  /** Verifica conexión, TLS y autenticación contra el proveedor SMTP configurado. */
+  verify(): Promise<true> {
+    return this.transporter.verify();
+  }
+
+  /** Envía y propaga el error (verificación de despliegue). */
+  async sendOrThrow(to: string, subject: string, html: string, text: string) {
+    await this.transporter.sendMail({
+      from: this.from,
+      to,
+      subject,
+      html,
+      text,
     });
   }
 
