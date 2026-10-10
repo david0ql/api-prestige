@@ -21,6 +21,7 @@ import type { Response } from 'express';
 import { diskStorage } from 'multer';
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
+import { mkdirSync } from 'node:fs';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import {
@@ -67,7 +68,12 @@ export class MediaController {
     FileInterceptor('file', {
       // A disco (no memoria): los videos pueden pesar cientos de MB.
       storage: diskStorage({
-        destination: resolve(cfg.media.storageDir, 'tmp'),
+        // Se asegura el directorio en cada carga (resiste limpiezas del almacenamiento en caliente).
+        destination: (_req, _file, cb) => {
+          const dir = resolve(cfg.media.storageDir, 'tmp');
+          mkdirSync(dir, { recursive: true });
+          cb(null, dir);
+        },
         filename: (_req, _file, cb) => cb(null, randomUUID()),
       }),
       limits: {

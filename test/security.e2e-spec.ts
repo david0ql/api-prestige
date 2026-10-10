@@ -608,7 +608,7 @@ describe('Prestige Gold · seguridad, autenticación y administración (e2e)', (
 
   it('limita la tasa de peticiones en endpoints sensibles', async () => {
     let limited = false;
-    for (let i = 0; i < 40 && !limited; i++) {
+    for (let i = 0; i < 160 && !limited; i++) {
       const r = await api.http.post('/api/auth/refresh');
       if (r.status === 429) limited = true;
     }

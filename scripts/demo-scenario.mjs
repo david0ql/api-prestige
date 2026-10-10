@@ -225,7 +225,7 @@ async function main() {
   console.log('· Escenario C: cadena Gucci con faltante de hilo');
   const today = new Date();
   const iso = (days) =>
-    new Date(today.getTime() + days * 86400000).toISOString().slice(0, 10);
+    new Date(today.getTime() + days * 86400000).toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
   const o1 = await post('operaciones', '/orders', {
     productId: P['GUC-CAD'].id,
     variantId: P['GUC-CAD'].variants.find((v) => v.code === '50')?.id,
