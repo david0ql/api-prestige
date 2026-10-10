@@ -819,7 +819,7 @@ export class ReportsService {
     };
   }
 
-  // 10. Rentabilidad (RF-029/030, CA-011, P16)
+  // 10. Rentabilidad (RF-029, RF-030 por producto/taller/cliente/mes, CA-011, P16)
   async profitability(
     f: ReportFilters & { groupBy?: unknown },
   ): Promise<TabularReport> {

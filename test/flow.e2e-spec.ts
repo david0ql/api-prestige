@@ -975,6 +975,11 @@ describe('Prestige Gold · flujo completo (e2e)', () => {
     ).body;
     expect(profit.summary.revenue).toBe(15000000);
     expect(profit.summary.productionLaborCost).toBe(2070000);
+    // RF-030: rentabilidad por producto y por taller.
+    expect(profit.rows).toEqual([expect.objectContaining({ group: 'Cadena Gucci 24K', revenue: 15000000 })]);
+    const byWorkshop = (await api.get('gerencia', '/api/reports/profitability?groupBy=workshop')).body;
+    expect(byWorkshop.rows).toEqual([expect.objectContaining({ group: 'TC · Colmenares', revenue: 15000000 })]);
+    expect(byWorkshop.rows[0].grossProfit).toBe(byWorkshop.rows[0].revenue - byWorkshop.rows[0].cogs);
     expect(profit.summary.consolidatedNet).toBeCloseTo(
       15000000 -
         Number(profit.summary.productionMaterialCost) -
