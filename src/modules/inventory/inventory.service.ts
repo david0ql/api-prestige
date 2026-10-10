@@ -32,6 +32,7 @@ import { BusinessRuleException } from '../../common/utils/business-error';
 import { GRAM_EPSILON, roundGrams } from '../../common/utils/numeric';
 import { AuditService } from '../audit/audit.service';
 import { Location } from '../masters/entities/location.entity';
+import { User } from '../users/entities/user.entity';
 import { Material } from '../masters/entities/material.entity';
 import { MastersService } from '../masters/masters.service';
 import { OrderMaterialRequirement } from '../production/entities/order-material-requirement.entity';
@@ -887,10 +888,20 @@ export class InventoryService {
         : [extra];
 
     // Saldo inicial = efecto neto de movimientos anteriores al rango.
+    // RNF-007: solo las columnas necesarias y sin relaciones eager (miles de filas).
     const prior = await this.movements.find({
+      select: {
+        id: true,
+        grams: true,
+        fromLocationId: true,
+        toLocationId: true,
+      },
       where: scope({ materialId: q.materialId, createdAt: LessThan(from) }),
+      loadEagerRelations: false,
     });
-    const effect = (r: InventoryMovement) => {
+    const effect = (
+      r: Pick<InventoryMovement, 'grams' | 'fromLocationId' | 'toLocationId'>,
+    ) => {
       if (q.locationId)
         return (
           (r.toLocationId === q.locationId ? r.grams : 0) -
@@ -905,10 +916,57 @@ export class InventoryService {
     let balance = roundGrams(prior.reduce((s, r) => s + effect(r), 0));
     const opening = balance;
     const rows = await this.movements.find({
+      select: {
+        id: true,
+        number: true,
+        createdAt: true,
+        type: true,
+        status: true,
+        grams: true,
+        fromLocationId: true,
+        toLocationId: true,
+        lotId: true,
+        productionOrderId: true,
+        reference: true,
+        notes: true,
+        responsibleId: true,
+      },
       where: scope({ materialId: q.materialId, createdAt: Between(from, to) }),
-      relations: { responsible: true },
+      loadEagerRelations: false,
       order: { createdAt: 'ASC' },
     });
+    const ids = (pick: (r: InventoryMovement) => string | null) => [
+      ...new Set(rows.map(pick).filter((x): x is string => !!x)),
+    ];
+    const locIds = ids((r) => r.fromLocationId).concat(
+      ids((r) => r.toLocationId),
+    );
+    const [locs, lotRows, users] = await Promise.all([
+      locIds.length
+        ? this.locations.find({
+            select: { id: true, name: true },
+            where: { id: In([...new Set(locIds)]) },
+            loadEagerRelations: false,
+          })
+        : [],
+      ids((r) => r.lotId).length
+        ? this.lots.find({
+            select: { id: true, code: true },
+            where: { id: In(ids((r) => r.lotId)) },
+            loadEagerRelations: false,
+          })
+        : [],
+      ids((r) => r.responsibleId).length
+        ? this.ds.manager.find(User, {
+            select: { id: true, fullName: true },
+            where: { id: In(ids((r) => r.responsibleId)) },
+            loadEagerRelations: false,
+          })
+        : [],
+    ]);
+    const locName = new Map(locs.map((l) => [l.id, l.name]));
+    const lotCode = new Map(lotRows.map((l) => [l.id, l.code]));
+    const userName = new Map(users.map((u) => [u.id, u.fullName]));
     const lines = rows.map((r) => {
       const e = effect(r);
       balance = roundGrams(balance + e);
@@ -918,16 +976,16 @@ export class InventoryService {
         date: r.createdAt,
         type: r.type,
         status: r.status,
-        from: r.fromLocation?.name ?? null,
-        to: r.toLocation?.name ?? null,
-        lot: r.lot?.code ?? null,
+        from: r.fromLocationId ? (locName.get(r.fromLocationId) ?? null) : null,
+        to: r.toLocationId ? (locName.get(r.toLocationId) ?? null) : null,
+        lot: r.lotId ? (lotCode.get(r.lotId) ?? null) : null,
         inGrams: e > 0 ? e : 0,
         outGrams: e < 0 ? -e : 0,
         movedGrams: r.grams,
         balance,
         productionOrderId: r.productionOrderId,
         reference: r.reference,
-        responsible: r.responsible?.fullName,
+        responsible: userName.get(r.responsibleId),
         notes: r.notes,
       };
     });

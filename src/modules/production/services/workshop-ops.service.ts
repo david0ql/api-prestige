@@ -11,6 +11,7 @@ import {
   FindOptionsWhere,
   In,
   IsNull,
+  LessThan,
   LessThanOrEqual,
   Not,
   Repository,
@@ -601,14 +602,54 @@ export class WorkshopOpsService {
     const workshopId = user.workshopId;
     const em = this.ds.manager;
     const today = localDate();
-    const [orders, pendingDispatches, requests, custody] = await Promise.all([
-      em.find(ProductionOrder, {
+    const open = Not(In([S.APPROVED_CLOSED, S.CANCELLED]));
+    // RNF-007: conteos en BD y listas acotadas; solo las relaciones que el panel muestra.
+    const light = {
+      relations: { product: true, variant: true },
+      loadEagerRelations: false,
+      order: { commitmentDate: 'ASC' as const },
+    };
+    const [
+      openOrders,
+      overdue,
+      orders,
+      actionable,
+      pendingDispatches,
+      requests,
+      custody,
+    ] = await Promise.all([
+      em.count(ProductionOrder, { where: { workshopId, status: open } }),
+      em.count(ProductionOrder, {
         where: {
           workshopId,
-          status: Not(In([S.APPROVED_CLOSED, S.CANCELLED])),
+          commitmentDate: LessThan(today),
+          status: Not(
+            In([
+              S.APPROVED_CLOSED,
+              S.CANCELLED,
+              S.FINISHED_BY_WORKSHOP,
+              S.IN_REVIEW,
+            ]),
+          ),
         },
-        relations: { requirements: true },
-        order: { commitmentDate: 'ASC' },
+      }),
+      em.find(ProductionOrder, {
+        ...light,
+        where: { workshopId, status: open },
+        take: 20,
+      }),
+      em.find(ProductionOrder, {
+        ...light,
+        where: {
+          workshopId,
+          status: In([
+            S.REJECTED_ADJUSTMENT,
+            S.ACCEPTED_BY_WORKSHOP,
+            S.IN_PRODUCTION,
+            S.PARTIAL,
+          ]),
+        },
+        take: 50,
       }),
       em.find(MaterialDispatch, {
         where: { workshopId, status: DispatchStatus.PENDING_ACCEPTANCE },
@@ -641,7 +682,7 @@ export class WorkshopOpsService {
         priority: 'HIGH',
       });
     }
-    for (const o of orders) {
+    for (const o of actionable) {
       if (o.status === S.REJECTED_ADJUSTMENT)
         tasks.push({
           type: 'ADJUST',
@@ -665,12 +706,8 @@ export class WorkshopOpsService {
     return {
       workshop: { id: workshopId, code: user.workshopCode },
       kpis: {
-        openOrders: orders.length,
-        overdue: orders.filter(
-          (o) =>
-            o.commitmentDate < today &&
-            ![S.FINISHED_BY_WORKSHOP, S.IN_REVIEW].includes(o.status),
-        ).length,
+        openOrders,
+        overdue,
         pendingDispatches: pendingDispatches.length,
         custodyGrams: roundGrams(
           custody.totals.reduce((s, t) => s + t.grams, 0),

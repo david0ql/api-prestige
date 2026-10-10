@@ -11,6 +11,8 @@ async function bootstrap() {
     bufferLogs: false,
   });
   setupApp(app);
+  // RNF-006: cierre ordenado (SIGTERM) — termina peticiones en curso y libera el pool de la BD.
+  app.enableShutdownHooks();
   const config = app.get(ConfigService);
 
   if (config.get<boolean>('security.swaggerEnabled')) {

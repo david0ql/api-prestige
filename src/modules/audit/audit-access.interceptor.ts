@@ -32,7 +32,10 @@ export class AuditAccessInterceptor implements NestInterceptor {
           action: AuditAction.ACCESS,
           entityType,
           entityId: req.params?.id ?? null,
-          description: `${req.method} ${req.originalUrl ?? req.url}`.slice(0, 300),
+          description: `${req.method} ${req.originalUrl ?? req.url}`.slice(
+            0,
+            300,
+          ),
         });
         return data;
       }),

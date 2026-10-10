@@ -18,4 +18,4 @@ USER app
 EXPOSE 3300
 HEALTHCHECK --interval=30s --timeout=5s CMD wget -qO- http://127.0.0.1:3300/api/health || exit 1
 # Aplica migraciones pendientes y arranca.
-CMD ["sh", "-c", "node node_modules/typeorm/cli.js migration:run -d dist/database/data-source.js && node dist/main"]
+CMD ["sh", "-c", "node node_modules/typeorm/cli.js migration:run -d dist/database/data-source.js && exec node dist/main"]

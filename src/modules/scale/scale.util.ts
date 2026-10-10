@@ -9,7 +9,9 @@ export function parseScaleReading(
   raw: string,
 ): { grams: number; stable: boolean } | null {
   const text = raw.trim();
-  const match = text.match(/([+-]?)\s*(\d+(?:[.,]\d+)?)\s*(kg|gn|g|ct|ozt|oz|dwt)?/i);
+  const match = text.match(
+    /([+-]?)\s*(\d+(?:[.,]\d+)?)\s*(kg|gn|g|ct|ozt|oz|dwt)?/i,
+  );
   if (!match) return null;
   const sign = match[1] === '-' ? -1 : 1;
   const value = Number(match[2].replace(',', '.')) * sign;
