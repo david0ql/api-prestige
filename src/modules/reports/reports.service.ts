@@ -835,6 +835,17 @@ export class ReportsService {
     const workshops = await this.workshopNames(
       sales.flatMap((s) => s.lines.map((l) => l.finishedGood.workshopId)),
     );
+    // RF-030 · rentabilidad por operación de cliente (venta/encargo).
+    const opIds = [...new Set(sales.map((s) => s.operationId))];
+    const operations = new Map(
+      (opIds.length
+        ? await this.ds.manager.find(CustomerOperation, {
+            where: { id: In(opIds) },
+            loadEagerRelations: false,
+          })
+        : []
+      ).map((o) => [o.id, `${o.number} · ${o.description}`]),
+    );
     const lines = sales
       .flatMap((s) => s.lines.map((l) => ({ s, l })))
       .filter(
@@ -850,7 +861,9 @@ export class ReportsService {
           ? (customers.get(s.customerId) ?? '')
           : groupBy === 'workshop'
             ? (workshops.get(l.finishedGood.workshopId) ?? '')
-            : month(s.dispatchDate);
+            : groupBy === 'operation'
+              ? (operations.get(s.operationId) ?? '')
+              : month(s.dispatchDate);
     const map = new Map<
       string,
       {
@@ -955,7 +968,9 @@ export class ReportsService {
                 ? 'Cliente'
                 : groupBy === 'workshop'
                   ? 'Taller'
-                  : 'Mes',
+                  : groupBy === 'operation'
+                    ? 'Operación'
+                    : 'Mes',
         },
         { key: 'revenue', label: 'Ventas', type: 'money' },
         { key: 'cogs', label: 'Costo de lo vendido', type: 'money' },

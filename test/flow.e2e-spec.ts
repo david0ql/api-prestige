@@ -973,30 +973,97 @@ describe('Prestige Gold · flujo completo (e2e)', () => {
     const profit = (
       await api.get('gerencia', '/api/reports/profitability?groupBy=product')
     ).body;
-    expect(profit.summary.revenue).toBe(15000000);
+    // Ingresos recalculados desde las ventas del período (otras suites pueden haber vendido).
+    const salesInPeriod = (
+      await api.get('operaciones', '/api/sales?pageSize=200')
+    ).body.items.filter(
+      (x: { dispatchDate: string; reversed: boolean }) =>
+        !x.reversed &&
+        x.dispatchDate >= profit.filters.from &&
+        x.dispatchDate <= profit.filters.to,
+    ) as { lines: { value: number }[] }[];
+    const revenue = salesInPeriod
+      .flatMap((x) => x.lines)
+      .reduce((a, l) => a + l.value, 0);
+    expect(revenue).toBeGreaterThanOrEqual(15000000);
+    expect(profit.summary.revenue).toBe(revenue);
     // Mano de obra aprobada de las órdenes de este flujo (otras suites comparten la base).
     const laborOf = async (id: string) =>
-      (await api.get('finanzas', `/api/finance/costs?orderId=${id}&type=LABOR`)).body.items.reduce((sum: number, c: { amount: number }) => sum + c.amount, 0);
-    expect((await laborOf(order1.id)) + (await laborOf(childOrderId))).toBe(2070000);
+      (
+        await api.get('finanzas', `/api/finance/costs?orderId=${id}&type=LABOR`)
+      ).body.items.reduce(
+        (sum: number, c: { amount: number }) => sum + c.amount,
+        0,
+      );
+    expect((await laborOf(order1.id)) + (await laborOf(childOrderId))).toBe(
+      2070000,
+    );
     expect(profit.summary.productionLaborCost).toBeGreaterThanOrEqual(2070000);
     // RF-030: rentabilidad por producto y por taller.
-    expect(profit.rows).toEqual([expect.objectContaining({ group: 'Cadena Gucci 24K', revenue: 15000000 })]);
-    const byWorkshop = (await api.get('gerencia', '/api/reports/profitability?groupBy=workshop')).body;
-    expect(byWorkshop.rows).toEqual([expect.objectContaining({ group: 'TC · Colmenares', revenue: 15000000 })]);
-    expect(byWorkshop.rows[0].grossProfit).toBe(byWorkshop.rows[0].revenue - byWorkshop.rows[0].cogs);
+    expect(profit.rows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          group: 'Cadena Gucci 24K',
+          revenue: 15000000,
+        }),
+      ]),
+    );
+    const byWorkshop = (
+      await api.get('gerencia', '/api/reports/profitability?groupBy=workshop')
+    ).body;
+    const tcRow = byWorkshop.rows.find(
+      (r: { group: string }) => r.group === 'TC · Colmenares',
+    );
+    expect(tcRow.revenue).toBeGreaterThanOrEqual(15000000);
+    expect(
+      byWorkshop.rows.reduce(
+        (a: number, r: { revenue: number }) => a + r.revenue,
+        0,
+      ),
+    ).toBe(revenue);
+    expect(tcRow.grossProfit).toBe(tcRow.revenue - tcRow.cogs);
     // CA-011 recalculado de forma independiente desde los registros contables del mes:
     // ventas − costo de material − mano de obra aprobada − gastos operativos.
     const month = profit.filters.from as string;
     const to = profit.filters.to as string;
-    const costs = (await api.get('finanzas', `/api/finance/costs?from=${month}&to=${to}&pageSize=200`)).body.items as { type: string; amount: number }[];
-    const material = costs.filter((c) => c.type === 'MATERIAL').reduce((a, c) => a + c.amount, 0);
-    const labor = costs.filter((c) => c.type === 'LABOR').reduce((a, c) => a + c.amount, 0);
-    const txs = (await api.get('finanzas', `/api/finance/transactions?type=EXPENSE&from=${month}&to=${to}&pageSize=200`)).body.items as { amount: number; status: string; source: string; category: { isOperatingExpense: boolean } }[];
-    const opex = txs.filter((t) => t.status === 'POSTED' && t.source !== 'REVERSAL' && t.category.isOperatingExpense).reduce((a, t) => a + t.amount, 0);
+    const costs = (
+      await api.get(
+        'finanzas',
+        `/api/finance/costs?from=${month}&to=${to}&pageSize=200`,
+      )
+    ).body.items as { type: string; amount: number }[];
+    const material = costs
+      .filter((c) => c.type === 'MATERIAL')
+      .reduce((a, c) => a + c.amount, 0);
+    const labor = costs
+      .filter((c) => c.type === 'LABOR')
+      .reduce((a, c) => a + c.amount, 0);
+    const txs = (
+      await api.get(
+        'finanzas',
+        `/api/finance/transactions?type=EXPENSE&from=${month}&to=${to}&pageSize=200`,
+      )
+    ).body.items as {
+      amount: number;
+      status: string;
+      source: string;
+      category: { isOperatingExpense: boolean };
+    }[];
+    const opex = txs
+      .filter(
+        (t) =>
+          t.status === 'POSTED' &&
+          t.source !== 'REVERSAL' &&
+          t.category.isOperatingExpense,
+      )
+      .reduce((a, t) => a + t.amount, 0);
     expect(profit.summary.productionMaterialCost).toBeCloseTo(material, 2);
     expect(profit.summary.productionLaborCost).toBeCloseTo(labor, 2);
     expect(profit.summary.operatingExpenses).toBeCloseTo(opex, 2);
-    expect(profit.summary.consolidatedNet).toBeCloseTo(15000000 - material - labor - opex, 2);
+    expect(profit.summary.consolidatedNet).toBeCloseTo(
+      revenue - material - labor - opex,
+      2,
+    );
     const xlsx = await api.http
       .get('/api/reports/productivity/export?format=xlsx')
       .set('Authorization', `Bearer ${await api.token('gerencia')}`)
@@ -1047,7 +1114,7 @@ describe('Prestige Gold · flujo completo (e2e)', () => {
     expect(
       (await api.get('gerencia', '/api/dashboard/office')).body.kpis
         .salesThisMonth,
-    ).toBe(15000000);
+    ).toBe(revenue);
   });
 
   // ---------------------------------------------------------------- CA-016 / RN-024
@@ -1142,7 +1209,12 @@ describe('Prestige Gold · flujo completo (e2e)', () => {
 
   it('RF-028 / RN-020 · ingresos, egresos, pagos a talleres y cierre de período', async () => {
     // Línea base: otras suites pueden haber registrado movimientos en la misma base.
-    const base = (await api.get('finanzas', '/api/finance/summary?from=2026-10-01&to=2026-10-31')).body;
+    const base = (
+      await api.get(
+        'finanzas',
+        '/api/finance/summary?from=2026-10-01&to=2026-10-31',
+      )
+    ).body;
     const cats: { id: string; code: string }[] = (
       await api.get('finanzas', '/api/finance-categories')
     ).body;
@@ -1188,7 +1260,9 @@ describe('Prestige Gold · flujo completo (e2e)', () => {
         (p: { workshop: { code: string } }) => p.workshop.code === 'TJV',
       ).balance,
     ).toBe(0);
-    const tc = payables.find((p: { workshop: { code: string } }) => p.workshop.code === 'TC');
+    const tc = payables.find(
+      (p: { workshop: { code: string } }) => p.workshop.code === 'TC',
+    );
     expect(tc.balance).toBe(tc.approvedLabor - tc.paid);
     expect(tc.approvedLabor).toBeGreaterThanOrEqual(2000000);
     const summary = (

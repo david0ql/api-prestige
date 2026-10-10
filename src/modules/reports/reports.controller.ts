@@ -34,9 +34,11 @@ class ReportQueryDto {
   @ApiPropertyOptional() @IsOptional() @IsUUID() materialId?: string;
   @ApiPropertyOptional() @IsOptional() @IsUUID() customerId?: string;
   @ApiPropertyOptional() @IsOptional() @IsUUID() locationId?: string;
-  @ApiPropertyOptional({ enum: ['month', 'product', 'customer', 'workshop'] })
+  @ApiPropertyOptional({
+    enum: ['month', 'product', 'customer', 'workshop', 'operation'],
+  })
   @IsOptional()
-  @IsIn(['month', 'product', 'customer', 'workshop'])
+  @IsIn(['month', 'product', 'customer', 'workshop', 'operation'])
   groupBy?: string;
   @ApiPropertyOptional()
   @IsOptional()
