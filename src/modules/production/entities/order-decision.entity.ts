@@ -1,4 +1,10 @@
-import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { InsufficiencyAction } from '../../../common/enums/domain.enums';
 import { gramsColumn } from '../../../common/utils/numeric';
 

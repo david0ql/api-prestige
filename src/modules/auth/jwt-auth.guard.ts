@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
@@ -33,15 +38,19 @@ export class JwtAuthGuard implements CanActivate {
 
     const req = context.switchToHttp().getRequest<Request>();
     const [type, token] = req.headers.authorization?.split(' ') ?? [];
-    if (type !== 'Bearer' || !token) throw new UnauthorizedException('Token no provisto');
+    if (type !== 'Bearer' || !token)
+      throw new UnauthorizedException('Token no provisto');
 
     let payload: AccessTokenPayload;
     try {
-      payload = await this.jwt.verifyAsync<AccessTokenPayload>(token, { algorithms: ['HS256'] });
+      payload = await this.jwt.verifyAsync<AccessTokenPayload>(token, {
+        algorithms: ['HS256'],
+      });
     } catch {
       throw new UnauthorizedException('Token inválido o expirado');
     }
-    if (payload.typ !== 'access') throw new UnauthorizedException('Token inválido');
+    if (payload.typ !== 'access')
+      throw new UnauthorizedException('Token inválido');
 
     const user = await this.authUsers.resolve(payload.sub, payload.sid);
     (req as Request & { user: unknown }).user = user;

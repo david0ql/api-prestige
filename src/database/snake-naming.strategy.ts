@@ -18,8 +18,14 @@ export class SnakeNamingStrategy
     return customName ?? snake(className);
   }
 
-  columnName(propertyName: string, customName: string | undefined, prefixes: string[]): string {
-    return snake(prefixes.concat('').join('_')) + (customName ?? snake(propertyName));
+  columnName(
+    propertyName: string,
+    customName: string | undefined,
+    prefixes: string[],
+  ): string {
+    return (
+      snake(prefixes.concat('').join('_')) + (customName ?? snake(propertyName))
+    );
   }
 
   relationName(propertyName: string): string {
@@ -34,7 +40,11 @@ export class SnakeNamingStrategy
     return snake(`${firstTableName}_${secondTableName}`);
   }
 
-  joinTableColumnName(tableName: string, propertyName: string, columnName?: string): string {
+  joinTableColumnName(
+    tableName: string,
+    propertyName: string,
+    columnName?: string,
+  ): string {
     return snake(`${tableName}_${columnName ?? propertyName}`);
   }
 

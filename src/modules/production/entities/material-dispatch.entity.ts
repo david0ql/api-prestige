@@ -35,7 +35,11 @@ export class MaterialDispatch extends BaseEntity {
   @Column({ type: 'text' })
   purpose!: string;
 
-  @Column({ type: 'enum', enum: DispatchStatus, default: DispatchStatus.PENDING_ACCEPTANCE })
+  @Column({
+    type: 'enum',
+    enum: DispatchStatus,
+    default: DispatchStatus.PENDING_ACCEPTANCE,
+  })
   status!: DispatchStatus;
 
   @Column({ type: 'uuid', nullable: true })
@@ -62,6 +66,9 @@ export class MaterialDispatch extends BaseEntity {
   @Column({ type: 'uuid', nullable: true })
   acceptanceId!: string | null;
 
-  @OneToMany(() => DispatchLine, (l) => l.dispatch, { cascade: ['insert'], eager: true })
+  @OneToMany(() => DispatchLine, (l) => l.dispatch, {
+    cascade: ['insert'],
+    eager: true,
+  })
   lines!: DispatchLine[];
 }

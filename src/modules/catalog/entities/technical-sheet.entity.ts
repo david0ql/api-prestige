@@ -1,5 +1,16 @@
-import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { gramsColumn, numeric, purityColumn } from '../../../common/utils/numeric';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import {
+  gramsColumn,
+  numeric,
+  purityColumn,
+} from '../../../common/utils/numeric';
 import { Product } from '../../masters/entities/product.entity';
 import { User } from '../../users/entities/user.entity';
 
@@ -31,17 +42,41 @@ export class TechnicalSheet {
   weightTolerance!: number | null;
 
   /** Diámetro (mm). */
-  @Column({ type: 'numeric', precision: 10, scale: 3, nullable: true, transformer: numeric })
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 3,
+    nullable: true,
+    transformer: numeric,
+  })
   diameterMm!: number | null;
 
   /** Largo (mm/cm según medida). */
-  @Column({ type: 'numeric', precision: 10, scale: 3, nullable: true, transformer: numeric })
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 3,
+    nullable: true,
+    transformer: numeric,
+  })
   lengthMm!: number | null;
 
-  @Column({ type: 'numeric', precision: 10, scale: 3, nullable: true, transformer: numeric })
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 3,
+    nullable: true,
+    transformer: numeric,
+  })
   widthMm!: number | null;
 
-  @Column({ type: 'numeric', precision: 10, scale: 3, nullable: true, transformer: numeric })
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 3,
+    nullable: true,
+    transformer: numeric,
+  })
   thicknessMm!: number | null;
 
   /** Medidas adicionales en texto libre (talla, calibre...). */

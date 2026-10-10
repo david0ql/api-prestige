@@ -1,4 +1,11 @@
-import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { purityColumn } from '../../../common/utils/numeric';
 import { Material } from '../../masters/entities/material.entity';
 import { Customer } from '../../masters/entities/customer.entity';

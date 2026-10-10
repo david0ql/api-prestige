@@ -9,10 +9,16 @@ import { seedBase, seedDemo } from '../src/database/seeds/seeder';
 export default async function globalSetup() {
   process.env.NODE_ENV = 'test';
   const cfg = configuration();
-  if (cfg.database.name !== (process.env.DATABASE_NAME_TEST ?? 'prestige_test')) {
-    throw new Error('Las pruebas solo pueden ejecutarse contra la base de pruebas');
+  if (
+    cfg.database.name !== (process.env.DATABASE_NAME_TEST ?? 'prestige_test')
+  ) {
+    throw new Error(
+      'Las pruebas solo pueden ejecutarse contra la base de pruebas',
+    );
   }
-  const ds = await new DataSource(buildTypeOrmOptions(cfg.database)).initialize();
+  const ds = await new DataSource(
+    buildTypeOrmOptions(cfg.database),
+  ).initialize();
   await ds.dropDatabase();
   await ds.runMigrations();
   await seedBase(ds, cfg.seed.adminPassword);

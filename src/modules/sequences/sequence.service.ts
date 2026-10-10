@@ -8,7 +8,11 @@ import { DocumentSequence } from './entities/document-sequence.entity';
  */
 @Injectable()
 export class SequenceService {
-  async next(manager: EntityManager, prefix: string, padding = 5): Promise<string> {
+  async next(
+    manager: EntityManager,
+    prefix: string,
+    padding = 5,
+  ): Promise<string> {
     const year = new Date().getFullYear();
     const repo = manager.getRepository(DocumentSequence);
     await repo
@@ -19,7 +23,8 @@ export class SequenceService {
       .execute();
     const seq = await repo.findOneOrFail({
       where: { prefix, year },
-      lock: { mode: 'pessimistic_write' }, loadEagerRelations: false,
+      lock: { mode: 'pessimistic_write' },
+      loadEagerRelations: false,
     });
     seq.lastValue += 1;
     await repo.save(seq);

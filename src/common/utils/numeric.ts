@@ -44,3 +44,13 @@ export const roundMoney = (v: number) => round(v, 2);
 
 /** Umbral bajo el cual una diferencia en gramos se considera cero (ruido). */
 export const GRAM_EPSILON = 0.001;
+
+/** Convierte un valor desconocido a texto sin perder objetos ("[object Object]"). */
+export function asText(v: unknown): string {
+  if (v === null || v === undefined) return '';
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number' || typeof v === 'boolean' || typeof v === 'bigint')
+    return v.toString();
+  if (v instanceof Date) return v.toISOString();
+  return JSON.stringify(v);
+}

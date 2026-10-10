@@ -45,7 +45,13 @@ export class MaterialRequest extends BaseEntity {
   @Column({ ...gramsColumn, nullable: true })
   alreadyDeliveredGrams!: number | null;
 
-  @Column({ type: 'numeric', precision: 9, scale: 3, nullable: true, transformer: numeric })
+  @Column({
+    type: 'numeric',
+    precision: 9,
+    scale: 3,
+    nullable: true,
+    transformer: numeric,
+  })
   deviationPct!: number | null;
 
   @Column({ default: false })

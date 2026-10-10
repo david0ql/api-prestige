@@ -1,11 +1,26 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuditAccess } from '../../common/decorators/audit-access.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
 import { Permission as P } from '../../common/enums/permission.enum';
 import type { AuthUser } from '../../common/types/auth-user';
-import { ClosePeriodDto, CostQueryDto, CreateTransactionDto, PeriodQueryDto, ReverseTransactionDto, TransactionQueryDto } from './dto/finance.dto';
+import {
+  ClosePeriodDto,
+  CostQueryDto,
+  CreateTransactionDto,
+  PeriodQueryDto,
+  ReverseTransactionDto,
+  TransactionQueryDto,
+} from './dto/finance.dto';
 import { FinanceService } from './finance.service';
 
 @ApiTags('Caja / Finanzas')
@@ -35,7 +50,11 @@ export class FinanceController {
 
   @Post('transactions/:id/reverse')
   @RequirePermissions(P.FINANCE_MANAGE, P.REVERSALS_AUTHORIZE)
-  reverse(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ReverseTransactionDto, @CurrentUser() user: AuthUser) {
+  reverse(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ReverseTransactionDto,
+    @CurrentUser() user: AuthUser,
+  ) {
     return this.finance.reverse(id, dto.reason, user);
   }
 
@@ -53,7 +72,9 @@ export class FinanceController {
 
   @Get('workshop-payables')
   @RequirePermissions(P.FINANCE_READ)
-  @ApiOperation({ summary: 'Pagos a talleres: mano de obra aprobada vs pagada' })
+  @ApiOperation({
+    summary: 'Pagos a talleres: mano de obra aprobada vs pagada',
+  })
   payables() {
     return this.finance.workshopPayables();
   }

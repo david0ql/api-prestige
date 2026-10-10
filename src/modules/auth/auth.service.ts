@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -37,8 +42,10 @@ const DUMMY_HASH =
 export class AuthService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
-    @InjectRepository(RefreshToken) private readonly refreshTokens: Repository<RefreshToken>,
-    @InjectRepository(PasswordResetToken) private readonly resetTokens: Repository<PasswordResetToken>,
+    @InjectRepository(RefreshToken)
+    private readonly refreshTokens: Repository<RefreshToken>,
+    @InjectRepository(PasswordResetToken)
+    private readonly resetTokens: Repository<PasswordResetToken>,
     private readonly dataSource: DataSource,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
@@ -63,11 +70,17 @@ export class AuthService {
   }
 
   /** P01: login con bloqueo temporal tras N intentos fallidos (anti fuerza bruta). */
-  async login(identifier: string, password: string, client: ClientInfo): Promise<IssuedSession> {
+  async login(
+    identifier: string,
+    password: string,
+    client: ClientInfo,
+  ): Promise<IssuedSession> {
     const user = await this.findForLogin(identifier);
     const maxFailed = this.config.get<number>('security.maxFailedLogins', 5);
     const lockMinutes = this.config.get<number>('security.lockMinutes', 15);
-    const generic = new UnauthorizedException('Usuario o contraseña incorrectos');
+    const generic = new UnauthorizedException(
+      'Usuario o contraseña incorrectos',
+    );
 
     if (!user) {
       await argon2.verify(DUMMY_HASH, password).catch(() => false);
@@ -85,7 +98,9 @@ export class AuthService {
         `Cuenta bloqueada temporalmente por intentos fallidos. Intente después de ${user.lockedUntil.toISOString()}`,
       );
     }
-    const ok = await argon2.verify(user.passwordHash, password).catch(() => false);
+    const ok = await argon2
+      .verify(user.passwordHash, password)
+      .catch(() => false);
     if (!ok) {
       user.failedLoginAttempts += 1;
       if (user.failedLoginAttempts >= maxFailed) {
@@ -102,11 +117,14 @@ export class AuthService {
         entityId: user.id,
         userId: user.id,
         username: user.username,
-        description: user.lockedUntil ? 'Contraseña incorrecta; cuenta bloqueada' : 'Contraseña incorrecta',
+        description: user.lockedUntil
+          ? 'Contraseña incorrecta; cuenta bloqueada'
+          : 'Contraseña incorrecta',
       });
       throw generic;
     }
-    if (!user.active || !user.role.active) throw new ForbiddenException('Usuario inactivo');
+    if (!user.active || !user.role.active)
+      throw new ForbiddenException('Usuario inactivo');
 
     await this.users.update(user.id, {
       failedLoginAttempts: 0,
@@ -115,7 +133,9 @@ export class AuthService {
     });
     // Rehash transparente si cambian los parámetros de argon2.
     if (argon2.needsRehash(user.passwordHash)) {
-      await this.users.update(user.id, { passwordHash: await AuthService.hashPassword(password) });
+      await this.users.update(user.id, {
+        passwordHash: await AuthService.hashPassword(password),
+      });
     }
     const session = await this.issue(user, randomUUID(), client);
     await this.audit.log({
@@ -128,11 +148,21 @@ export class AuthService {
     return session;
   }
 
-  private async issue(user: User, family: string, client: ClientInfo): Promise<IssuedSession> {
+  private async issue(
+    user: User,
+    family: string,
+    client: ClientInfo,
+  ): Promise<IssuedSession> {
     const accessTtl = this.config.get<number>('jwt.accessTtl', 900);
     const refreshTtl = this.config.get<number>('jwt.refreshTtl', 604800);
-    const payload: AccessTokenPayload = { sub: user.id, sid: family, typ: 'access' };
-    const accessToken = await this.jwt.signAsync(payload, { expiresIn: accessTtl });
+    const payload: AccessTokenPayload = {
+      sub: user.id,
+      sid: family,
+      typ: 'access',
+    };
+    const accessToken = await this.jwt.signAsync(payload, {
+      expiresIn: accessTtl,
+    });
     const refreshToken = randomToken();
     const refreshExpiresAt = new Date(Date.now() + refreshTtl * 1000);
     await this.refreshTokens.save(
@@ -158,12 +188,20 @@ export class AuthService {
    * Rotación de refresh token. Si llega un token ya rotado/revocado se asume robo
    * y se revoca toda la familia de la sesión.
    */
-  async refresh(rawToken: string | undefined, client: ClientInfo): Promise<IssuedSession> {
+  async refresh(
+    rawToken: string | undefined,
+    client: ClientInfo,
+  ): Promise<IssuedSession> {
     if (!rawToken) throw new UnauthorizedException('Sesión no encontrada');
-    const token = await this.refreshTokens.findOne({ where: { tokenHash: sha256(rawToken) } });
+    const token = await this.refreshTokens.findOne({
+      where: { tokenHash: sha256(rawToken) },
+    });
     if (!token) throw new UnauthorizedException('Sesión inválida');
     if (token.revokedAt || token.rotatedAt) {
-      await this.refreshTokens.update({ family: token.family }, { revokedAt: new Date() });
+      await this.refreshTokens.update(
+        { family: token.family },
+        { revokedAt: new Date() },
+      );
       this.authUsers.invalidateUser(token.userId);
       await this.audit.log({
         action: AuditAction.LOGOUT,
@@ -174,15 +212,23 @@ export class AuthService {
       });
       throw new UnauthorizedException('Sesión revocada');
     }
-    if (token.expiresAt < new Date()) throw new UnauthorizedException('Sesión expirada');
+    if (token.expiresAt < new Date())
+      throw new UnauthorizedException('Sesión expirada');
     const user = await this.users.findOne({ where: { id: token.userId } });
-    if (!user || !user.active) throw new UnauthorizedException('Usuario inactivo');
+    if (!user || !user.active)
+      throw new UnauthorizedException('Usuario inactivo');
 
     return this.dataSource.transaction(async (m) => {
       await m.update(RefreshToken, { id: token.id }, { rotatedAt: new Date() });
       const accessTtl = this.config.get<number>('jwt.accessTtl', 900);
-      const payload: AccessTokenPayload = { sub: user.id, sid: token.family, typ: 'access' };
-      const accessToken = await this.jwt.signAsync(payload, { expiresIn: accessTtl });
+      const payload: AccessTokenPayload = {
+        sub: user.id,
+        sid: token.family,
+        typ: 'access',
+      };
+      const accessToken = await this.jwt.signAsync(payload, {
+        expiresIn: accessTtl,
+      });
       const refreshToken = randomToken();
       await m.save(
         m.create(RefreshToken, {
@@ -211,24 +257,38 @@ export class AuthService {
       { revokedAt: new Date() },
     );
     this.authUsers.invalidateUser(user.id);
-    await this.audit.log({ action: AuditAction.LOGOUT, entityType: 'Auth', entityId: user.id });
+    await this.audit.log({
+      action: AuditAction.LOGOUT,
+      entityType: 'Auth',
+      entityId: user.id,
+    });
   }
 
   async revokeAllSessions(userId: string): Promise<void> {
-    await this.refreshTokens.update({ userId, revokedAt: IsNull() }, { revokedAt: new Date() });
+    await this.refreshTokens.update(
+      { userId, revokedAt: IsNull() },
+      { revokedAt: new Date() },
+    );
     this.authUsers.invalidateUser(userId);
   }
 
-  async changePassword(user: AuthUser, current: string, next: string): Promise<void> {
+  async changePassword(
+    user: AuthUser,
+    current: string,
+    next: string,
+  ): Promise<void> {
     const entity = await this.users
       .createQueryBuilder('u')
       .addSelect('u.passwordHash')
       .where({ id: user.id })
       .getOneOrFail();
-    if (!(await argon2.verify(entity.passwordHash, current).catch(() => false))) {
+    if (
+      !(await argon2.verify(entity.passwordHash, current).catch(() => false))
+    ) {
       throw new BadRequestException('La contraseña actual no es correcta');
     }
-    if (current === next) throw new BadRequestException('La nueva contraseña debe ser diferente');
+    if (current === next)
+      throw new BadRequestException('La nueva contraseña debe ser diferente');
     await this.users.update(user.id, {
       passwordHash: await AuthService.hashPassword(next),
       passwordChangedAt: new Date(),
@@ -250,7 +310,9 @@ export class AuthService {
 
   /** P01 recuperación de acceso: respuesta idéntica exista o no el correo. */
   async forgotPassword(email: string): Promise<void> {
-    const user = await this.users.findOne({ where: { email: email.trim().toLowerCase(), active: true } });
+    const user = await this.users.findOne({
+      where: { email: email.trim().toLowerCase(), active: true },
+    });
     if (!user) return;
     const raw = randomToken(32);
     await this.resetTokens.save(
@@ -279,19 +341,36 @@ export class AuthService {
 
   async resetPassword(rawToken: string, newPassword: string): Promise<void> {
     const token = await this.resetTokens.findOne({
-      where: { tokenHash: sha256(rawToken), usedAt: IsNull(), expiresAt: MoreThan(new Date()) },
+      where: {
+        tokenHash: sha256(rawToken),
+        usedAt: IsNull(),
+        expiresAt: MoreThan(new Date()),
+      },
     });
-    if (!token) throw new BadRequestException('El enlace es inválido o ya venció');
+    if (!token)
+      throw new BadRequestException('El enlace es inválido o ya venció');
     await this.dataSource.transaction(async (m) => {
-      await m.update(PasswordResetToken, { id: token.id }, { usedAt: new Date() });
-      await m.update(User, { id: token.userId }, {
-        passwordHash: await AuthService.hashPassword(newPassword),
-        passwordChangedAt: new Date(),
-        failedLoginAttempts: 0,
-        lockedUntil: null,
-        mustChangePassword: false,
-      });
-      await m.update(RefreshToken, { userId: token.userId, revokedAt: IsNull() }, { revokedAt: new Date() });
+      await m.update(
+        PasswordResetToken,
+        { id: token.id },
+        { usedAt: new Date() },
+      );
+      await m.update(
+        User,
+        { id: token.userId },
+        {
+          passwordHash: await AuthService.hashPassword(newPassword),
+          passwordChangedAt: new Date(),
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+          mustChangePassword: false,
+        },
+      );
+      await m.update(
+        RefreshToken,
+        { userId: token.userId, revokedAt: IsNull() },
+        { revokedAt: new Date() },
+      );
     });
     this.authUsers.invalidateUser(token.userId);
     await this.audit.log({

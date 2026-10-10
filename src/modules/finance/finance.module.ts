@@ -8,7 +8,9 @@ import { FinanceService } from './finance.service';
 
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([FinancialTransaction, CostEntry, PeriodClose])],
+  imports: [
+    TypeOrmModule.forFeature([FinancialTransaction, CostEntry, PeriodClose]),
+  ],
   controllers: [FinanceController],
   providers: [FinanceService],
   exports: [FinanceService],

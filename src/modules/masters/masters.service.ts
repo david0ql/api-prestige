@@ -1,6 +1,19 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, FindOptionsWhere, ILike, In, IsNull, ObjectLiteral, Repository } from 'typeorm';
+import {
+  DataSource,
+  FindOptionsWhere,
+  ILike,
+  In,
+  IsNull,
+  ObjectLiteral,
+  Repository,
+} from 'typeorm';
 import { paginated } from '../../common/dto/pagination.dto';
 import { LocationType, RecordStatus } from '../../common/enums/domain.enums';
 import { ConsumptionStandard } from './entities/consumption-standard.entity';
@@ -20,18 +33,43 @@ import { TechnicalVariable } from './entities/technical-variable.entity';
 import { Unit } from './entities/unit.entity';
 import { Workshop } from './entities/workshop.entity';
 import {
-  CreateCustomerDto, CreateFinanceCategoryDto, CreateLaborRateDto, CreateLocationDto,
-  CreateMaterialCategoryDto, CreateMaterialDto, CreatePaymentMethodDto, CreateProductDto,
-  CreateProductFamilyDto, CreateStageDto, CreateStandardDto, CreateUnitDto, CreateVariableDto,
-  CreateVariantDto, CreateWorkshopDto, MasterQueryDto, UpdateCustomerDto, UpdateFinanceCategoryDto,
-  UpdateLaborRateDto, UpdateLocationDto, UpdateMaterialCategoryDto, UpdateMaterialDto,
-  UpdatePaymentMethodDto, UpdateProductDto, UpdateProductFamilyDto, UpdateStageDto,
-  UpdateStandardDto, UpdateUnitDto, UpdateVariableDto, UpdateVariantDto, UpdateWorkshopDto,
+  CreateCustomerDto,
+  CreateFinanceCategoryDto,
+  CreateLaborRateDto,
+  CreateLocationDto,
+  CreateMaterialCategoryDto,
+  CreateMaterialDto,
+  CreatePaymentMethodDto,
+  CreateProductDto,
+  CreateProductFamilyDto,
+  CreateStageDto,
+  CreateStandardDto,
+  CreateUnitDto,
+  CreateVariableDto,
+  CreateVariantDto,
+  CreateWorkshopDto,
+  MasterQueryDto,
+  UpdateCustomerDto,
+  UpdateFinanceCategoryDto,
+  UpdateLaborRateDto,
+  UpdateLocationDto,
+  UpdateMaterialCategoryDto,
+  UpdateMaterialDto,
+  UpdatePaymentMethodDto,
+  UpdateProductDto,
+  UpdateProductFamilyDto,
+  UpdateStageDto,
+  UpdateStandardDto,
+  UpdateUnitDto,
+  UpdateVariableDto,
+  UpdateVariantDto,
+  UpdateWorkshopDto,
 } from './dto/masters.dto';
 
 export const MOTHER_OFFICE_CODE = 'OFICINA-MADRE';
 export const TRANSIT_CODE = 'TRANSITO';
-export const workshopLocationCode = (code: string) => `TALLER-${code.toUpperCase()}`;
+export const workshopLocationCode = (code: string) =>
+  `TALLER-${code.toUpperCase()}`;
 
 /**
  * Maestros y parametrización (RF-037/038, RN-018): todo se crea desde
@@ -42,26 +80,46 @@ export class MastersService {
   constructor(
     private readonly ds: DataSource,
     @InjectRepository(Unit) private readonly units: Repository<Unit>,
-    @InjectRepository(MaterialCategory) private readonly categories: Repository<MaterialCategory>,
-    @InjectRepository(Material) private readonly materials: Repository<Material>,
-    @InjectRepository(Workshop) private readonly workshops: Repository<Workshop>,
-    @InjectRepository(Location) private readonly locations: Repository<Location>,
-    @InjectRepository(Customer) private readonly customers: Repository<Customer>,
-    @InjectRepository(ProductFamily) private readonly families: Repository<ProductFamily>,
+    @InjectRepository(MaterialCategory)
+    private readonly categories: Repository<MaterialCategory>,
+    @InjectRepository(Material)
+    private readonly materials: Repository<Material>,
+    @InjectRepository(Workshop)
+    private readonly workshops: Repository<Workshop>,
+    @InjectRepository(Location)
+    private readonly locations: Repository<Location>,
+    @InjectRepository(Customer)
+    private readonly customers: Repository<Customer>,
+    @InjectRepository(ProductFamily)
+    private readonly families: Repository<ProductFamily>,
     @InjectRepository(Product) private readonly products: Repository<Product>,
-    @InjectRepository(ProductVariant) private readonly variants: Repository<ProductVariant>,
-    @InjectRepository(ProductWorkshop) private readonly productWorkshops: Repository<ProductWorkshop>,
-    @InjectRepository(ConsumptionStandard) private readonly standards: Repository<ConsumptionStandard>,
-    @InjectRepository(LaborRate) private readonly laborRates: Repository<LaborRate>,
-    @InjectRepository(ProductionStage) private readonly stages: Repository<ProductionStage>,
-    @InjectRepository(TechnicalVariable) private readonly variables: Repository<TechnicalVariable>,
-    @InjectRepository(PaymentMethod) private readonly paymentMethods: Repository<PaymentMethod>,
-    @InjectRepository(FinanceCategory) private readonly financeCategories: Repository<FinanceCategory>,
+    @InjectRepository(ProductVariant)
+    private readonly variants: Repository<ProductVariant>,
+    @InjectRepository(ProductWorkshop)
+    private readonly productWorkshops: Repository<ProductWorkshop>,
+    @InjectRepository(ConsumptionStandard)
+    private readonly standards: Repository<ConsumptionStandard>,
+    @InjectRepository(LaborRate)
+    private readonly laborRates: Repository<LaborRate>,
+    @InjectRepository(ProductionStage)
+    private readonly stages: Repository<ProductionStage>,
+    @InjectRepository(TechnicalVariable)
+    private readonly variables: Repository<TechnicalVariable>,
+    @InjectRepository(PaymentMethod)
+    private readonly paymentMethods: Repository<PaymentMethod>,
+    @InjectRepository(FinanceCategory)
+    private readonly financeCategories: Repository<FinanceCategory>,
   ) {}
 
   // ---------- helpers genéricos ----------
-  private async findOr404<T extends ObjectLiteral>(repo: Repository<T>, id: string, label: string): Promise<T> {
-    const e = await repo.findOne({ where: { id } as unknown as FindOptionsWhere<T> });
+  private async findOr404<T extends ObjectLiteral>(
+    repo: Repository<T>,
+    id: string,
+    label: string,
+  ): Promise<T> {
+    const e = await repo.findOne({
+      where: { id } as unknown as FindOptionsWhere<T>,
+    });
     if (!e) throw new NotFoundException(`${label} no encontrado`);
     return e;
   }
@@ -77,18 +135,25 @@ export class MastersService {
     }
   }
 
-  private searchable<T>(q: MasterQueryDto, fields: (keyof T)[], extra: FindOptionsWhere<T> = {}) {
-    const base = { ...extra } as FindOptionsWhere<T>;
+  private searchable<T>(
+    q: MasterQueryDto,
+    fields: (keyof T)[],
+    extra: FindOptionsWhere<T> = {},
+  ) {
+    const base = { ...extra };
     if (q.status) (base as Record<string, unknown>).status = q.status;
     if (!q.search) return base;
-    return fields.map((f) => ({ ...base, [f]: ILike(`%${q.search}%`) }) as FindOptionsWhere<T>);
+    return fields.map(
+      (f) => ({ ...base, [f]: ILike(`%${q.search}%`) }) as FindOptionsWhere<T>,
+    );
   }
 
   /** Valida que una entidad referida exista y esté activa (validación crítica). */
   async activeMaterial(id: string): Promise<Material> {
     const m = await this.materials.findOne({ where: { id } });
     if (!m) throw new BadRequestException('Material inexistente');
-    if (m.status !== RecordStatus.ACTIVE) throw new BadRequestException(`El material ${m.name} está inactivo`);
+    if (m.status !== RecordStatus.ACTIVE)
+      throw new BadRequestException(`El material ${m.name} está inactivo`);
     return m;
   }
 
@@ -103,7 +168,9 @@ export class MastersService {
   async updateUnit(id: string, dto: UpdateUnitDto) {
     const u = await this.findOr404(this.units, id, 'Unidad');
     if (u.isBase && dto.factorToGram !== undefined && dto.factorToGram !== 1) {
-      throw new BadRequestException('El gramo es la unidad base: su factor es 1');
+      throw new BadRequestException(
+        'El gramo es la unidad base: su factor es 1',
+      );
     }
     if (dto.code) await this.ensureUnique(this.units, { code: dto.code }, id);
     return this.units.save(Object.assign(u, dto));
@@ -119,7 +186,8 @@ export class MastersService {
   }
   async updateCategory(id: string, dto: UpdateMaterialCategoryDto) {
     const c = await this.findOr404(this.categories, id, 'Categoría');
-    if (dto.code) await this.ensureUnique(this.categories, { code: dto.code }, id);
+    if (dto.code)
+      await this.ensureUnique(this.categories, { code: dto.code }, id);
     return this.categories.save(Object.assign(c, dto));
   }
 
@@ -147,9 +215,12 @@ export class MastersService {
   }
   async updateMaterial(id: string, dto: UpdateMaterialDto) {
     const m = await this.getMaterial(id);
-    if (dto.code) await this.ensureUnique(this.materials, { code: dto.code }, id);
-    if (dto.categoryId) await this.findOr404(this.categories, dto.categoryId, 'Categoría');
-    if (dto.baseUnitId) await this.findOr404(this.units, dto.baseUnitId, 'Unidad');
+    if (dto.code)
+      await this.ensureUnique(this.materials, { code: dto.code }, id);
+    if (dto.categoryId)
+      await this.findOr404(this.categories, dto.categoryId, 'Categoría');
+    if (dto.baseUnitId)
+      await this.findOr404(this.units, dto.baseUnitId, 'Unidad');
     Object.assign(m, dto);
     if (dto.categoryId) delete (m as Partial<Material>).category;
     if (dto.baseUnitId) delete (m as Partial<Material>).baseUnit;
@@ -171,7 +242,10 @@ export class MastersService {
     );
   }
   async getWorkshop(id: string) {
-    const w = await this.workshops.findOne({ where: { id }, relations: { products: { product: true } } });
+    const w = await this.workshops.findOne({
+      where: { id },
+      relations: { products: { product: true } },
+    });
     if (!w) throw new NotFoundException('Taller no encontrado');
     return w;
   }
@@ -192,7 +266,12 @@ export class MastersService {
           workshopId: w.id,
         }),
       );
-      if (productIds?.length) await this.syncWorkshopProducts(m.getRepository(ProductWorkshop), w.id, productIds);
+      if (productIds?.length)
+        await this.syncWorkshopProducts(
+          m.getRepository(ProductWorkshop),
+          w.id,
+          productIds,
+        );
       return w.id;
     });
     return this.getWorkshop(id);
@@ -214,12 +293,21 @@ export class MastersService {
         loc.status = updated.status;
         await m.save(Location, loc);
       }
-      if (productIds) await this.syncWorkshopProducts(m.getRepository(ProductWorkshop), id, productIds);
+      if (productIds)
+        await this.syncWorkshopProducts(
+          m.getRepository(ProductWorkshop),
+          id,
+          productIds,
+        );
     });
     return this.getWorkshop(id);
   }
 
-  private async syncWorkshopProducts(repo: Repository<ProductWorkshop>, workshopId: string, productIds: string[]) {
+  private async syncWorkshopProducts(
+    repo: Repository<ProductWorkshop>,
+    workshopId: string,
+    productIds: string[],
+  ) {
     const existing = await repo.find({ where: { workshopId } });
     const keep = new Set(productIds);
     for (const pw of existing) {
@@ -229,8 +317,13 @@ export class MastersService {
     }
     if (keep.size) {
       const valid = await this.products.find({ where: { id: In([...keep]) } });
-      if (valid.length !== keep.size) throw new BadRequestException('Algún producto no existe');
-      await repo.save([...keep].map((productId) => repo.create({ workshopId, productId, enabled: true })));
+      if (valid.length !== keep.size)
+        throw new BadRequestException('Algún producto no existe');
+      await repo.save(
+        [...keep].map((productId) =>
+          repo.create({ workshopId, productId, enabled: true }),
+        ),
+      );
     }
   }
 
@@ -244,14 +337,23 @@ export class MastersService {
   }
   async updateLocation(id: string, dto: UpdateLocationDto) {
     const l = await this.findOr404(this.locations, id, 'Ubicación');
-    if ([LocationType.MOTHER_OFFICE, LocationType.WORKSHOP].includes(l.type) && dto.type && dto.type !== l.type) {
-      throw new BadRequestException('No se puede cambiar el tipo de una ubicación de sistema');
+    if (
+      [LocationType.MOTHER_OFFICE, LocationType.WORKSHOP].includes(l.type) &&
+      dto.type &&
+      dto.type !== l.type
+    ) {
+      throw new BadRequestException(
+        'No se puede cambiar el tipo de una ubicación de sistema',
+      );
     }
-    if (dto.code) await this.ensureUnique(this.locations, { code: dto.code }, id);
+    if (dto.code)
+      await this.ensureUnique(this.locations, { code: dto.code }, id);
     return this.locations.save(Object.assign(l, dto));
   }
   async motherOffice(): Promise<Location> {
-    const l = await this.locations.findOne({ where: { type: LocationType.MOTHER_OFFICE } });
+    const l = await this.locations.findOne({
+      where: { type: LocationType.MOTHER_OFFICE },
+    });
     if (!l) throw new NotFoundException('No existe la ubicación Oficina Madre');
     return l;
   }
@@ -262,7 +364,8 @@ export class MastersService {
   }
   async workshopLocation(workshopId: string): Promise<Location> {
     const l = await this.locations.findOne({ where: { workshopId } });
-    if (!l) throw new NotFoundException('El taller no tiene ubicación de custodia');
+    if (!l)
+      throw new NotFoundException('El taller no tiene ubicación de custodia');
     return l;
   }
 
@@ -270,7 +373,12 @@ export class MastersService {
   async listCustomers(q: MasterQueryDto) {
     return paginated(
       await this.customers.findAndCount({
-        where: this.searchable<Customer>(q, ['name', 'documentNumber', 'email', 'phone']),
+        where: this.searchable<Customer>(q, [
+          'name',
+          'documentNumber',
+          'email',
+          'phone',
+        ]),
         order: { name: 'ASC' },
         skip: q.skip,
         take: q.pageSize,
@@ -282,7 +390,10 @@ export class MastersService {
     return this.findOr404(this.customers, id, 'Cliente');
   }
   async createCustomer(dto: CreateCustomerDto) {
-    await this.ensureUnique(this.customers, { documentType: dto.documentType, documentNumber: dto.documentNumber });
+    await this.ensureUnique(this.customers, {
+      documentType: dto.documentType,
+      documentNumber: dto.documentNumber,
+    });
     return this.customers.save(this.customers.create(dto));
   }
   async updateCustomer(id: string, dto: UpdateCustomerDto) {
@@ -290,7 +401,10 @@ export class MastersService {
     if (dto.documentNumber || dto.documentType) {
       await this.ensureUnique(
         this.customers,
-        { documentType: dto.documentType ?? c.documentType, documentNumber: dto.documentNumber ?? c.documentNumber },
+        {
+          documentType: dto.documentType ?? c.documentType,
+          documentNumber: dto.documentNumber ?? c.documentNumber,
+        },
         id,
       );
     }
@@ -307,15 +421,19 @@ export class MastersService {
   }
   async updateFamily(id: string, dto: UpdateProductFamilyDto) {
     const f = await this.findOr404(this.families, id, 'Familia');
-    if (dto.code) await this.ensureUnique(this.families, { code: dto.code }, id);
+    if (dto.code)
+      await this.ensureUnique(this.families, { code: dto.code }, id);
     return this.families.save(Object.assign(f, dto));
   }
 
   // ---------- Productos ----------
-  async listProducts(q: MasterQueryDto & { familyId?: string; workshopId?: string }) {
+  async listProducts(
+    q: MasterQueryDto & { familyId?: string; workshopId?: string },
+  ) {
     const extra: FindOptionsWhere<Product> = {};
     if (q.familyId) extra.familyId = q.familyId;
-    if (q.workshopId) extra.workshops = { workshopId: q.workshopId, enabled: true };
+    if (q.workshopId)
+      extra.workshops = { workshopId: q.workshopId, enabled: true };
     return paginated(
       await this.products.findAndCount({
         where: this.searchable<Product>(q, ['code', 'name'], extra),
@@ -330,7 +448,11 @@ export class MastersService {
   async getProduct(id: string) {
     const p = await this.products.findOne({
       where: { id },
-      relations: { variants: true, workshops: true, standards: { variant: true } },
+      relations: {
+        variants: true,
+        workshops: true,
+        standards: { variant: true },
+      },
     });
     if (!p) throw new NotFoundException('Producto no encontrado');
     return p;
@@ -342,26 +464,53 @@ export class MastersService {
     const id = await this.ds.transaction(async (m) => {
       const { workshopIds, ...data } = dto;
       const p = await m.save(Product, m.create(Product, data));
-      if (workshopIds?.length) await this.syncProductWorkshops(m.getRepository(ProductWorkshop), p.id, workshopIds);
+      if (workshopIds?.length)
+        await this.syncProductWorkshops(
+          m.getRepository(ProductWorkshop),
+          p.id,
+          workshopIds,
+        );
       return p.id;
     });
     return this.getProduct(id);
   }
   async updateProduct(id: string, dto: UpdateProductDto) {
     const p = await this.getProduct(id);
-    if (dto.code) await this.ensureUnique(this.products, { code: dto.code }, id);
-    if (dto.familyId) await this.findOr404(this.families, dto.familyId, 'Familia');
+    if (dto.code)
+      await this.ensureUnique(this.products, { code: dto.code }, id);
+    if (dto.familyId)
+      await this.findOr404(this.families, dto.familyId, 'Familia');
     if (dto.outputMaterialId) await this.activeMaterial(dto.outputMaterialId);
     await this.ds.transaction(async (m) => {
       const { workshopIds, ...data } = dto;
-      const { variants: _v, workshops: _w, standards: _s, family: _f, outputMaterial: _o, ...plain } = p;
-      void _v; void _w; void _s; void _f; void _o;
+      const {
+        variants: _v,
+        workshops: _w,
+        standards: _s,
+        family: _f,
+        outputMaterial: _o,
+        ...plain
+      } = p;
+      void _v;
+      void _w;
+      void _s;
+      void _f;
+      void _o;
       await m.save(Product, { ...plain, ...data });
-      if (workshopIds) await this.syncProductWorkshops(m.getRepository(ProductWorkshop), id, workshopIds);
+      if (workshopIds)
+        await this.syncProductWorkshops(
+          m.getRepository(ProductWorkshop),
+          id,
+          workshopIds,
+        );
     });
     return this.getProduct(id);
   }
-  private async syncProductWorkshops(repo: Repository<ProductWorkshop>, productId: string, workshopIds: string[]) {
+  private async syncProductWorkshops(
+    repo: Repository<ProductWorkshop>,
+    productId: string,
+    workshopIds: string[],
+  ) {
     const existing = await repo.find({ where: { productId } });
     const keep = new Set(workshopIds);
     for (const pw of existing) {
@@ -370,16 +519,28 @@ export class MastersService {
       keep.delete(pw.workshopId);
     }
     if (keep.size) {
-      const valid = await this.workshops.count({ where: { id: In([...keep]) } });
-      if (valid !== keep.size) throw new BadRequestException('Algún taller no existe');
-      await repo.save([...keep].map((workshopId) => repo.create({ productId, workshopId, enabled: true })));
+      const valid = await this.workshops.count({
+        where: { id: In([...keep]) },
+      });
+      if (valid !== keep.size)
+        throw new BadRequestException('Algún taller no existe');
+      await repo.save(
+        [...keep].map((workshopId) =>
+          repo.create({ productId, workshopId, enabled: true }),
+        ),
+      );
     }
   }
 
   /** Validación crítica: taller habilitado para el producto asignado. */
   async assertWorkshopEnabled(productId: string, workshopId: string) {
-    const ok = await this.productWorkshops.exists({ where: { productId, workshopId, enabled: true } });
-    if (!ok) throw new BadRequestException('El taller no está habilitado para fabricar este producto');
+    const ok = await this.productWorkshops.exists({
+      where: { productId, workshopId, enabled: true },
+    });
+    if (!ok)
+      throw new BadRequestException(
+        'El taller no está habilitado para fabricar este producto',
+      );
   }
 
   async createVariant(productId: string, dto: CreateVariantDto) {
@@ -390,24 +551,40 @@ export class MastersService {
   async updateVariant(productId: string, id: string, dto: UpdateVariantDto) {
     const v = await this.variants.findOne({ where: { id, productId } });
     if (!v) throw new NotFoundException('Variante no encontrada');
-    if (dto.code) await this.ensureUnique(this.variants, { productId, code: dto.code }, id);
+    if (dto.code)
+      await this.ensureUnique(this.variants, { productId, code: dto.code }, id);
     return this.variants.save(Object.assign(v, dto));
   }
 
   // ---------- Estándares de consumo ----------
   listStandards(productId: string) {
-    return this.standards.find({ where: { productId }, relations: { variant: true }, order: { createdAt: 'ASC' } });
+    return this.standards.find({
+      where: { productId },
+      relations: { variant: true },
+      order: { createdAt: 'ASC' },
+    });
   }
   async createStandard(productId: string, dto: CreateStandardDto) {
     await this.findOr404(this.products, productId, 'Producto');
     await this.activeMaterial(dto.materialId);
-    if (dto.variantId && !(await this.variants.exists({ where: { id: dto.variantId, productId } }))) {
+    if (
+      dto.variantId &&
+      !(await this.variants.exists({ where: { id: dto.variantId, productId } }))
+    ) {
       throw new BadRequestException('La variante no pertenece al producto');
     }
     const dup = await this.standards.exists({
-      where: { productId, materialId: dto.materialId, variantId: dto.variantId ? dto.variantId : IsNull(), active: true },
+      where: {
+        productId,
+        materialId: dto.materialId,
+        variantId: dto.variantId ? dto.variantId : IsNull(),
+        active: true,
+      },
     });
-    if (dup) throw new ConflictException('Ya existe un estándar activo para ese material/variante');
+    if (dup)
+      throw new ConflictException(
+        'Ya existe un estándar activo para ese material/variante',
+      );
     return this.standards.save(this.standards.create({ ...dto, productId }));
   }
   async updateStandard(productId: string, id: string, dto: UpdateStandardDto) {
@@ -421,11 +598,15 @@ export class MastersService {
 
   // ---------- Tarifas ----------
   listLaborRates(workshopId?: string) {
-    return this.laborRates.find({ where: workshopId ? { workshopId } : {}, order: { validFrom: 'DESC' } });
+    return this.laborRates.find({
+      where: workshopId ? { workshopId } : {},
+      order: { validFrom: 'DESC' },
+    });
   }
   async createLaborRate(dto: CreateLaborRateDto) {
     await this.findOr404(this.workshops, dto.workshopId, 'Taller');
-    if (dto.productId) await this.findOr404(this.products, dto.productId, 'Producto');
+    if (dto.productId)
+      await this.findOr404(this.products, dto.productId, 'Producto');
     return this.laborRates.save(this.laborRates.create(dto));
   }
   async updateLaborRate(id: string, dto: UpdateLaborRateDto) {
@@ -443,7 +624,9 @@ export class MastersService {
   async createStage(dto: CreateStageDto) {
     await this.ensureUnique(this.stages, { code: dto.code });
     const { familyIds, ...data } = dto;
-    const families = familyIds?.length ? await this.families.findBy({ id: In(familyIds) }) : [];
+    const families = familyIds?.length
+      ? await this.families.findBy({ id: In(familyIds) })
+      : [];
     return this.stages.save(this.stages.create({ ...data, families }));
   }
   async updateStage(id: string, dto: UpdateStageDto) {
@@ -451,13 +634,23 @@ export class MastersService {
     if (dto.code) await this.ensureUnique(this.stages, { code: dto.code }, id);
     const { familyIds, ...data } = dto;
     Object.assign(s, data);
-    if (familyIds) s.families = familyIds.length ? await this.families.findBy({ id: In(familyIds) }) : [];
+    if (familyIds)
+      s.families = familyIds.length
+        ? await this.families.findBy({ id: In(familyIds) })
+        : [];
     return this.stages.save(s);
   }
   /** Etapas aplicables a un producto (por familia; sin familias = todas). */
   async stagesForProduct(product: Product): Promise<ProductionStage[]> {
-    const all = await this.stages.find({ where: { active: true }, order: { sequence: 'ASC' } });
-    return all.filter((s) => s.families.length === 0 || s.families.some((f) => f.id === product.familyId));
+    const all = await this.stages.find({
+      where: { active: true },
+      order: { sequence: 'ASC' },
+    });
+    return all.filter(
+      (s) =>
+        s.families.length === 0 ||
+        s.families.some((f) => f.id === product.familyId),
+    );
   }
 
   // ---------- Variables técnicas ----------
@@ -467,20 +660,33 @@ export class MastersService {
   async createVariable(dto: CreateVariableDto) {
     await this.ensureUnique(this.variables, { code: dto.code });
     const { familyIds, ...data } = dto;
-    const families = familyIds?.length ? await this.families.findBy({ id: In(familyIds) }) : [];
+    const families = familyIds?.length
+      ? await this.families.findBy({ id: In(familyIds) })
+      : [];
     return this.variables.save(this.variables.create({ ...data, families }));
   }
   async updateVariable(id: string, dto: UpdateVariableDto) {
     const v = await this.findOr404(this.variables, id, 'Variable');
-    if (dto.code) await this.ensureUnique(this.variables, { code: dto.code }, id);
+    if (dto.code)
+      await this.ensureUnique(this.variables, { code: dto.code }, id);
     const { familyIds, ...data } = dto;
     Object.assign(v, data);
-    if (familyIds) v.families = familyIds.length ? await this.families.findBy({ id: In(familyIds) }) : [];
+    if (familyIds)
+      v.families = familyIds.length
+        ? await this.families.findBy({ id: In(familyIds) })
+        : [];
     return this.variables.save(v);
   }
   async variablesForProduct(product: Product): Promise<TechnicalVariable[]> {
-    const all = await this.variables.find({ where: { active: true }, order: { name: 'ASC' } });
-    return all.filter((v) => v.families.length === 0 || v.families.some((f) => f.id === product.familyId));
+    const all = await this.variables.find({
+      where: { active: true },
+      order: { name: 'ASC' },
+    });
+    return all.filter(
+      (v) =>
+        v.families.length === 0 ||
+        v.families.some((f) => f.id === product.familyId),
+    );
   }
 
   // ---------- Medios de pago / categorías financieras ----------
@@ -493,7 +699,8 @@ export class MastersService {
   }
   async updatePaymentMethod(id: string, dto: UpdatePaymentMethodDto) {
     const p = await this.findOr404(this.paymentMethods, id, 'Medio de pago');
-    if (dto.code) await this.ensureUnique(this.paymentMethods, { code: dto.code }, id);
+    if (dto.code)
+      await this.ensureUnique(this.paymentMethods, { code: dto.code }, id);
     return this.paymentMethods.save(Object.assign(p, dto));
   }
   listFinanceCategories() {
@@ -506,9 +713,12 @@ export class MastersService {
   async updateFinanceCategory(id: string, dto: UpdateFinanceCategoryDto) {
     const c = await this.findOr404(this.financeCategories, id, 'Categoría');
     if (c.isSystem && (dto.code || dto.type)) {
-      throw new BadRequestException('No se puede cambiar código/tipo de una categoría de sistema');
+      throw new BadRequestException(
+        'No se puede cambiar código/tipo de una categoría de sistema',
+      );
     }
-    if (dto.code) await this.ensureUnique(this.financeCategories, { code: dto.code }, id);
+    if (dto.code)
+      await this.ensureUnique(this.financeCategories, { code: dto.code }, id);
     return this.financeCategories.save(Object.assign(c, dto));
   }
 }

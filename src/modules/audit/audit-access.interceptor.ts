@@ -1,4 +1,9 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable, tap } from 'rxjs';
 import { AUDIT_ACCESS_KEY } from '../../common/decorators/audit-access.decorator';
@@ -14,7 +19,10 @@ export class AuditAccessInterceptor implements NestInterceptor {
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    const entityType = this.reflector.get<string>(AUDIT_ACCESS_KEY, context.getHandler());
+    const entityType = this.reflector.get<string>(
+      AUDIT_ACCESS_KEY,
+      context.getHandler(),
+    );
     if (!entityType) return next.handle();
     const req = context.switchToHttp().getRequest();
     return next.handle().pipe(
@@ -23,7 +31,10 @@ export class AuditAccessInterceptor implements NestInterceptor {
           action: AuditAction.ACCESS,
           entityType,
           entityId: req.params?.id ?? null,
-          description: `${req.method} ${req.originalUrl ?? req.url}`.slice(0, 300),
+          description: `${req.method} ${req.originalUrl ?? req.url}`.slice(
+            0,
+            300,
+          ),
         });
       }),
     );

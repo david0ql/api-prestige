@@ -23,11 +23,21 @@ import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
-import { RequireAnyPermission, RequirePermissions } from '../../common/decorators/permissions.decorator';
+import {
+  RequireAnyPermission,
+  RequirePermissions,
+} from '../../common/decorators/permissions.decorator';
 import { Permission as P } from '../../common/enums/permission.enum';
 import type { AuthUser } from '../../common/types/auth-user';
 import configuration from '../../config/configuration';
-import { ContentQueryDto, CreateShareDto, HideMediaDto, MediaQueryDto, MediaVisibilityDto, UploadMediaDto } from './dto/media.dto';
+import {
+  ContentQueryDto,
+  CreateShareDto,
+  HideMediaDto,
+  MediaQueryDto,
+  MediaVisibilityDto,
+  UploadMediaDto,
+} from './dto/media.dto';
 import { MediaService } from './media.service';
 import { MediaStorageService } from './media-storage.service';
 
@@ -44,8 +54,15 @@ export class MediaController {
   @Post('media')
   @RequirePermissions(P.MEDIA_UPLOAD)
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } } })
-  @ApiOperation({ summary: 'RF-014 · Cargar foto/video/documento de evidencia' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { file: { type: 'string', format: 'binary' } },
+    },
+  })
+  @ApiOperation({
+    summary: 'RF-014 · Cargar foto/video/documento de evidencia',
+  })
   @UseInterceptors(
     FileInterceptor('file', {
       // A disco (no memoria): los videos pueden pesar cientos de MB.
@@ -53,10 +70,19 @@ export class MediaController {
         destination: resolve(cfg.media.storageDir, 'tmp'),
         filename: (_req, _file, cb) => cb(null, randomUUID()),
       }),
-      limits: { fileSize: Math.max(cfg.media.maxVideoMb, cfg.media.maxPhotoMb) * 1024 * 1024, files: 1, fields: 20 },
+      limits: {
+        fileSize:
+          Math.max(cfg.media.maxVideoMb, cfg.media.maxPhotoMb) * 1024 * 1024,
+        files: 1,
+        fields: 20,
+      },
     }),
   )
-  upload(@UploadedFile() file: Express.Multer.File, @Body() dto: UploadMediaDto, @CurrentUser() user: AuthUser) {
+  upload(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() dto: UploadMediaDto,
+    @CurrentUser() user: AuthUser,
+  ) {
     return this.media.upload(file, dto, user);
   }
 
@@ -80,13 +106,21 @@ export class MediaController {
   @Public()
   @SkipThrottle()
   @Get('media/:id/content')
-  async content(@Param('id', ParseUUIDPipe) id: string, @Query() q: ContentQueryDto, @Res() res: Response) {
+  async content(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() q: ContentQueryDto,
+    @Res() res: Response,
+  ) {
     const variant = q.variant ?? 'original';
-    if (!this.storage.verify(id, variant, q.exp, q.sig)) throw new ForbiddenException('Enlace inválido o vencido');
+    if (!this.storage.verify(id, variant, q.exp, q.sig))
+      throw new ForbiddenException('Enlace inválido o vencido');
     const file = await this.media.resolveContent(id, variant);
     res.setHeader('Cache-Control', 'private, max-age=3600');
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Content-Security-Policy', "default-src 'none'; img-src 'self'; media-src 'self'");
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'none'; img-src 'self'; media-src 'self'",
+    );
     if (q.download === '1') res.attachment(file.name);
     res.type(file.mime);
     res.sendFile(file.path, { acceptRanges: true, dotfiles: 'deny' });
@@ -95,7 +129,11 @@ export class MediaController {
   @Post('media/:id/hide')
   @RequireAnyPermission(P.MEDIA_MODERATE, P.WORKSHOP_PORTAL)
   @ApiOperation({ summary: 'RN-024 · Ocultar evidencia (nunca se elimina)' })
-  hide(@Param('id', ParseUUIDPipe) id: string, @Body() dto: HideMediaDto, @CurrentUser() user: AuthUser) {
+  hide(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: HideMediaDto,
+    @CurrentUser() user: AuthUser,
+  ) {
     return this.media.hide(id, dto.reason, user);
   }
 
@@ -107,21 +145,32 @@ export class MediaController {
 
   @Patch('media/:id/visibility')
   @RequirePermissions(P.MEDIA_MODERATE)
-  visibility(@Param('id', ParseUUIDPipe) id: string, @Body() dto: MediaVisibilityDto) {
+  visibility(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: MediaVisibilityDto,
+  ) {
     return this.media.setPublic(id, dto.publicVisible);
   }
 
   @Get('orders/:id/story')
   @RequireAnyPermission(P.MEDIA_READ, P.ORDERS_READ)
-  @ApiOperation({ summary: 'RF-041 / P20 · Historia visual (mosaico) de la orden por etapas' })
+  @ApiOperation({
+    summary: 'RF-041 / P20 · Historia visual (mosaico) de la orden por etapas',
+  })
   story(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
     return this.media.story(id, user);
   }
 
   @Post('orders/:id/story/shares')
   @RequirePermissions(P.MEDIA_MODERATE)
-  @ApiOperation({ summary: 'Crear enlace público de la historia (consumidor final)' })
-  share(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CreateShareDto, @CurrentUser() user: AuthUser) {
+  @ApiOperation({
+    summary: 'Crear enlace público de la historia (consumidor final)',
+  })
+  share(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateShareDto,
+    @CurrentUser() user: AuthUser,
+  ) {
     return this.media.createShare(id, dto, user);
   }
 
@@ -140,7 +189,9 @@ export class MediaController {
 
   @Public()
   @Get('public/stories/:token')
-  @ApiOperation({ summary: 'Historia pública de la prenda (sin datos internos)' })
+  @ApiOperation({
+    summary: 'Historia pública de la prenda (sin datos internos)',
+  })
   publicStory(@Param('token') token: string) {
     return this.media.publicStory(token);
   }

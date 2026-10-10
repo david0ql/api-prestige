@@ -19,7 +19,10 @@ export const PARAM = {
 
 @Injectable()
 export class ParametersService {
-  constructor(@InjectRepository(SystemParameter) private readonly repo: Repository<SystemParameter>) {}
+  constructor(
+    @InjectRepository(SystemParameter)
+    private readonly repo: Repository<SystemParameter>,
+  ) {}
 
   list() {
     return this.repo.find({ order: { groupName: 'ASC', key: 'ASC' } });

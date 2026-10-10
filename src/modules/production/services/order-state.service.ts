@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
-import { AuditAction, OrderStatus as S } from '../../../common/enums/domain.enums';
+import {
+  AuditAction,
+  OrderStatus as S,
+} from '../../../common/enums/domain.enums';
 import type { AuthUser } from '../../../common/types/auth-user';
 import { InvalidStateException } from '../../../common/utils/business-error';
 import { AuditService } from '../../audit/audit.service';
@@ -11,15 +14,40 @@ import { ProductionOrder } from '../entities/production-order.entity';
 /** Transiciones permitidas (sección 7.1). */
 export const ORDER_TRANSITIONS: Record<S, S[]> = {
   [S.DRAFT]: [S.PENDING_MATERIALS, S.READY_FOR_DISPATCH, S.CANCELLED],
-  [S.PENDING_MATERIALS]: [S.READY_FOR_DISPATCH, S.DISPATCHED, S.DRAFT, S.CANCELLED],
-  [S.READY_FOR_DISPATCH]: [S.PENDING_MATERIALS, S.DISPATCHED, S.DRAFT, S.CANCELLED],
-  [S.DISPATCHED]: [S.ACCEPTED_BY_WORKSHOP, S.PENDING_MATERIALS, S.READY_FOR_DISPATCH, S.CANCELLED],
-  [S.ACCEPTED_BY_WORKSHOP]: [S.IN_PRODUCTION, S.PARTIAL, S.FINISHED_BY_WORKSHOP, S.CANCELLED],
+  [S.PENDING_MATERIALS]: [
+    S.READY_FOR_DISPATCH,
+    S.DISPATCHED,
+    S.DRAFT,
+    S.CANCELLED,
+  ],
+  [S.READY_FOR_DISPATCH]: [
+    S.PENDING_MATERIALS,
+    S.DISPATCHED,
+    S.DRAFT,
+    S.CANCELLED,
+  ],
+  [S.DISPATCHED]: [
+    S.ACCEPTED_BY_WORKSHOP,
+    S.PENDING_MATERIALS,
+    S.READY_FOR_DISPATCH,
+    S.CANCELLED,
+  ],
+  [S.ACCEPTED_BY_WORKSHOP]: [
+    S.IN_PRODUCTION,
+    S.PARTIAL,
+    S.FINISHED_BY_WORKSHOP,
+    S.CANCELLED,
+  ],
   [S.IN_PRODUCTION]: [S.PARTIAL, S.FINISHED_BY_WORKSHOP, S.CANCELLED],
   [S.PARTIAL]: [S.FINISHED_BY_WORKSHOP, S.CANCELLED],
   [S.FINISHED_BY_WORKSHOP]: [S.IN_REVIEW, S.REJECTED_ADJUSTMENT],
   [S.IN_REVIEW]: [S.APPROVED_CLOSED, S.REJECTED_ADJUSTMENT],
-  [S.REJECTED_ADJUSTMENT]: [S.FINISHED_BY_WORKSHOP, S.IN_REVIEW, S.IN_PRODUCTION, S.CANCELLED],
+  [S.REJECTED_ADJUSTMENT]: [
+    S.FINISHED_BY_WORKSHOP,
+    S.IN_REVIEW,
+    S.IN_PRODUCTION,
+    S.CANCELLED,
+  ],
   [S.APPROVED_CLOSED]: [],
   [S.CANCELLED]: [],
 };
@@ -71,7 +99,13 @@ export class OrderStateService {
     }
   }
 
-  async transition(m: EntityManager, order: ProductionOrder, to: S, user: AuthUser, reason?: string) {
+  async transition(
+    m: EntityManager,
+    order: ProductionOrder,
+    to: S,
+    user: AuthUser,
+    reason?: string,
+  ) {
     if (order.status === to) return order;
     if (!ORDER_TRANSITIONS[order.status].includes(to)) {
       throw new InvalidStateException(
@@ -82,7 +116,8 @@ export class OrderStateService {
     const now = new Date();
     const patch: Partial<ProductionOrder> = { status: to };
     if (to === S.DISPATCHED && !order.dispatchedAt) patch.dispatchedAt = now;
-    if (to === S.ACCEPTED_BY_WORKSHOP && !order.acceptedAt) patch.acceptedAt = now;
+    if (to === S.ACCEPTED_BY_WORKSHOP && !order.acceptedAt)
+      patch.acceptedAt = now;
     if (to === S.IN_PRODUCTION && !order.startedAt) patch.startedAt = now;
     if (to === S.FINISHED_BY_WORKSHOP) patch.finishedByWorkshopAt = now;
     if (to === S.APPROVED_CLOSED) {
@@ -91,7 +126,11 @@ export class OrderStateService {
     }
     if (to === S.REJECTED_ADJUSTMENT) patch.rejectionReason = reason ?? null;
     if (to === S.CANCELLED) patch.cancellationReason = reason ?? null;
-    await m.update(ProductionOrder, { id: order.id }, patch as QueryDeepPartialEntity<ProductionOrder>);
+    await m.update(
+      ProductionOrder,
+      { id: order.id },
+      patch as QueryDeepPartialEntity<ProductionOrder>,
+    );
     Object.assign(order, patch);
     await m.save(
       OrderStatusHistory,

@@ -7,7 +7,11 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { EntityNotFoundError, OptimisticLockVersionMismatchError, QueryFailedError } from 'typeorm';
+import {
+  EntityNotFoundError,
+  OptimisticLockVersionMismatchError,
+  QueryFailedError,
+} from 'typeorm';
 
 /**
  * Formato de error uniforme. Nunca filtra detalles internos (stack/SQL) al cliente;
@@ -45,7 +49,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       error = 'Not Found';
     } else if (exception instanceof OptimisticLockVersionMismatchError) {
       status = HttpStatus.CONFLICT;
-      message = 'El registro fue modificado por otro usuario. Recargue e intente de nuevo.';
+      message =
+        'El registro fue modificado por otro usuario. Recargue e intente de nuevo.';
       error = 'Conflict';
     } else if (exception instanceof QueryFailedError) {
       const code = (exception.driverError as { code?: string })?.code;
@@ -62,7 +67,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = 'Identificador o valor con formato inválido';
         error = 'Bad Request';
       } else {
-        this.logger.error(`SQL error en ${request.method} ${request.url}: ${exception.message}`);
+        this.logger.error(
+          `SQL error en ${request.method} ${request.url}: ${exception.message}`,
+        );
       }
     } else {
       this.logger.error(

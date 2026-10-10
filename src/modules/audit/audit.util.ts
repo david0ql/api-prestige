@@ -1,8 +1,16 @@
 /** Campos que jamás deben quedar en la bitácora. */
-const SENSITIVE = new Set(['passwordHash', 'password', 'tokenHash', 'signatureImage', 'refreshToken']);
+const SENSITIVE = new Set([
+  'passwordHash',
+  'password',
+  'tokenHash',
+  'signatureImage',
+  'refreshToken',
+]);
 
 /** Convierte una entidad a JSON plano, sin secretos ni relaciones cargadas pesadas. */
-export function sanitizeForAudit(value: unknown): Record<string, unknown> | null {
+export function sanitizeForAudit(
+  value: unknown,
+): Record<string, unknown> | null {
   if (value === undefined || value === null) return null;
   if (typeof value !== 'object') return { value };
   const out: Record<string, unknown> = {};

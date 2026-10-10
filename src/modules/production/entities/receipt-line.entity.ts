@@ -10,7 +10,10 @@ export class ReceiptLine {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => ProductionReceipt, (r) => r.lines, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => ProductionReceipt, (r) => r.lines, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   receipt!: ProductionReceipt;
 
   @Column()

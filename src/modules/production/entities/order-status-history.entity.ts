@@ -1,4 +1,10 @@
-import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { OrderStatus } from '../../../common/enums/domain.enums';
 
 /** Historial de estados de la orden (seguimiento P06 y trazabilidad). */

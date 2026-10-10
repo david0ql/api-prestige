@@ -10,7 +10,10 @@ export class DispatchLine {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => MaterialDispatch, (d) => d.lines, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => MaterialDispatch, (d) => d.lines, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   dispatch!: MaterialDispatch;
 
   @Column()

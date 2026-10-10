@@ -1,6 +1,11 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
+import {
+  createHash,
+  createHmac,
+  randomUUID,
+  timingSafeEqual,
+} from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { mkdir, rename, stat, unlink, copyFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -41,7 +46,10 @@ export class MediaStorageService implements OnModuleInit {
   async sha256(path: string): Promise<string> {
     const hash = createHash('sha256');
     await new Promise<void>((res, rej) => {
-      createReadStream(path).on('data', (d) => hash.update(d)).on('end', () => res()).on('error', rej);
+      createReadStream(path)
+        .on('data', (d) => hash.update(d))
+        .on('end', () => res())
+        .on('error', rej);
     });
     return hash.digest('hex');
   }
@@ -62,14 +70,37 @@ export class MediaStorageService implements OnModuleInit {
   }
 
   /** Genera versión web (≤1920px, webp) y miniatura (480px) de una foto. */
-  async derivePhoto(rel: string): Promise<{ webPath: string | null; thumbPath: string | null; width: number | null; height: number | null }> {
+  async derivePhoto(rel: string): Promise<{
+    webPath: string | null;
+    thumbPath: string | null;
+    width: number | null;
+    height: number | null;
+  }> {
     try {
       const src = this.abs(rel);
       const base = rel.replace(/\.[^.]+$/, '');
       const meta = await sharp(src).metadata();
-      await sharp(src).rotate().resize({ width: 1920, height: 1920, fit: 'inside', withoutEnlargement: true }).webp({ quality: 82 }).toFile(this.abs(`${base}.web.webp`));
-      await sharp(src).rotate().resize({ width: 480, height: 480, fit: 'cover' }).webp({ quality: 70 }).toFile(this.abs(`${base}.thumb.webp`));
-      return { webPath: `${base}.web.webp`, thumbPath: `${base}.thumb.webp`, width: meta.width ?? null, height: meta.height ?? null };
+      await sharp(src)
+        .rotate()
+        .resize({
+          width: 1920,
+          height: 1920,
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
+        .webp({ quality: 82 })
+        .toFile(this.abs(`${base}.web.webp`));
+      await sharp(src)
+        .rotate()
+        .resize({ width: 480, height: 480, fit: 'cover' })
+        .webp({ quality: 70 })
+        .toFile(this.abs(`${base}.thumb.webp`));
+      return {
+        webPath: `${base}.web.webp`,
+        thumbPath: `${base}.thumb.webp`,
+        width: meta.width ?? null,
+        height: meta.height ?? null,
+      };
     } catch (e) {
       this.logger.warn(`No se pudo optimizar ${rel}: ${(e as Error).message}`);
       return { webPath: null, thumbPath: null, width: null, height: null };
@@ -86,10 +117,16 @@ export class MediaStorageService implements OnModuleInit {
   }
 
   private signature(id: string, variant: string, exp: number) {
-    return createHmac('sha256', this.secret).update(`${id}:${variant}:${exp}`).digest('base64url');
+    return createHmac('sha256', this.secret)
+      .update(`${id}:${variant}:${exp}`)
+      .digest('base64url');
   }
 
-  signedUrl(prefix: string, id: string, variant: 'original' | 'web' | 'thumb'): string {
+  signedUrl(
+    prefix: string,
+    id: string,
+    variant: 'original' | 'web' | 'thumb',
+  ): string {
     // Redondea la expiración a la ventana para que el navegador pueda cachear.
     const exp = Math.ceil((Date.now() / 1000 + this.ttl) / 300) * 300;
     return `/${prefix}/media/${id}/content?variant=${variant}&exp=${exp}&sig=${this.signature(id, variant, exp)}`;

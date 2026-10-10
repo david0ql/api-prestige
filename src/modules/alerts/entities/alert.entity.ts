@@ -1,6 +1,10 @@
 import { Column, Entity, Index } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
-import { AlertSeverity, AlertStatus, AlertType } from '../../../common/enums/domain.enums';
+import {
+  AlertSeverity,
+  AlertStatus,
+  AlertType,
+} from '../../../common/enums/domain.enums';
 
 /**
  * Alerta operativa (RF-039, P17). `dedupKey` evita duplicar la misma alerta

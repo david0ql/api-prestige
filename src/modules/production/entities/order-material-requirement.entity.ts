@@ -8,7 +8,10 @@ import { ProductionOrder } from './production-order.entity';
 @Entity('order_material_requirement')
 @Index(['orderId', 'materialId'], { unique: true })
 export class OrderMaterialRequirement extends BaseEntity {
-  @ManyToOne(() => ProductionOrder, (o) => o.requirements, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => ProductionOrder, (o) => o.requirements, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   order!: ProductionOrder;
 
   @Column()
@@ -23,7 +26,13 @@ export class OrderMaterialRequirement extends BaseEntity {
   @Column(gramsColumn)
   requiredGrams!: number;
 
-  @Column({ type: 'numeric', precision: 6, scale: 3, default: 5, transformer: numeric })
+  @Column({
+    type: 'numeric',
+    precision: 6,
+    scale: 3,
+    default: 5,
+    transformer: numeric,
+  })
   tolerancePct!: number;
 
   @Column({ type: 'uuid', nullable: true })

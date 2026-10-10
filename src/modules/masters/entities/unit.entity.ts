@@ -16,7 +16,13 @@ export class Unit extends BaseEntity {
   kind!: UnitKind;
 
   /** Para unidades de masa: cuántos gramos equivale 1 unidad (kg=1000, ozt=31.1035). */
-  @Column({ type: 'numeric', precision: 16, scale: 6, default: 1, transformer: numeric })
+  @Column({
+    type: 'numeric',
+    precision: 16,
+    scale: 6,
+    default: 1,
+    transformer: numeric,
+  })
   factorToGram!: number;
 
   @Column({ default: false })

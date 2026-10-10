@@ -33,6 +33,9 @@ export class ProductionReceipt extends BaseEntity {
   @Column()
   receivedById!: string;
 
-  @OneToMany(() => ReceiptLine, (l) => l.receipt, { cascade: ['insert'], eager: true })
+  @OneToMany(() => ReceiptLine, (l) => l.receipt, {
+    cascade: ['insert'],
+    eager: true,
+  })
   lines!: ReceiptLine[];
 }

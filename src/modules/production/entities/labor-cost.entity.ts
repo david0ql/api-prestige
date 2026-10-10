@@ -32,7 +32,11 @@ export class LaborCost extends BaseEntity {
   @Column({ ...moneyColumn, nullable: true })
   approvedValue!: number | null;
 
-  @Column({ type: 'enum', enum: ApprovalStatus, default: ApprovalStatus.PROPOSED })
+  @Column({
+    type: 'enum',
+    enum: ApprovalStatus,
+    default: ApprovalStatus.PROPOSED,
+  })
   status!: ApprovalStatus;
 
   @Column({ type: 'text', nullable: true })

@@ -15,7 +15,11 @@ export class TechnicalVariable extends BaseEntity {
   @Column({ type: 'varchar', length: 120 })
   name!: string;
 
-  @Column({ type: 'enum', enum: VariableDataType, default: VariableDataType.NUMBER })
+  @Column({
+    type: 'enum',
+    enum: VariableDataType,
+    default: VariableDataType.NUMBER,
+  })
   dataType!: VariableDataType;
 
   @Column({ type: 'varchar', length: 20, nullable: true })

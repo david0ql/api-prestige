@@ -1,4 +1,11 @@
-import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { gramsColumn, numeric } from '../../../common/utils/numeric';
 import { ProductionStage } from '../../masters/entities/production-stage.entity';
 
@@ -27,7 +34,13 @@ export class ProgressReport {
   @Column({ type: 'int', nullable: true })
   units!: number | null;
 
-  @Column({ type: 'numeric', precision: 5, scale: 2, nullable: true, transformer: numeric })
+  @Column({
+    type: 'numeric',
+    precision: 5,
+    scale: 2,
+    nullable: true,
+    transformer: numeric,
+  })
   percent!: number | null;
 
   @Column({ type: 'text', nullable: true })

@@ -1,4 +1,10 @@
-import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { gramsColumn, numeric } from '../../../common/utils/numeric';
 
 /**
@@ -27,10 +33,22 @@ export class FinishedDeclaration {
   @Column({ type: 'jsonb', default: {} })
   technicalValues!: Record<string, string | number | boolean>;
 
-  @Column({ type: 'numeric', precision: 10, scale: 3, nullable: true, transformer: numeric })
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 3,
+    nullable: true,
+    transformer: numeric,
+  })
   diameterMm!: number | null;
 
-  @Column({ type: 'numeric', precision: 10, scale: 3, nullable: true, transformer: numeric })
+  @Column({
+    type: 'numeric',
+    precision: 10,
+    scale: 3,
+    nullable: true,
+    transformer: numeric,
+  })
   lengthMm!: number | null;
 
   @Column({ type: 'text', nullable: true })

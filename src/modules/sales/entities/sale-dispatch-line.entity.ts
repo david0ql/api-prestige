@@ -8,7 +8,10 @@ export class SaleDispatchLine {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => SaleDispatch, (d) => d.lines, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => SaleDispatch, (d) => d.lines, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   dispatch!: SaleDispatch;
 
   @Column()

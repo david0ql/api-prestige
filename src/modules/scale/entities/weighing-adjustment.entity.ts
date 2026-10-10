@@ -1,4 +1,10 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { gramsColumn } from '../../../common/utils/numeric';
 import { User } from '../../users/entities/user.entity';
 import { Weighing } from './weighing.entity';

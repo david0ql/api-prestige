@@ -3,9 +3,17 @@ import { ReportExportService } from './report-export.service';
 describe('ReportExportService (RF-040)', () => {
   const svc = new ReportExportService();
   const report = {
-    key: 't', title: 'Prueba',
-    columns: [{ key: 'name', label: 'Nombre' }, { key: 'grams', label: 'Gramos', type: 'grams' as const }, { key: 'ok', label: 'OK', type: 'boolean' as const }],
-    rows: [{ name: '=HYPERLINK("http://x")', grams: 1.5, ok: true }, { name: 'Oro, 24K', grams: 2, ok: false }],
+    key: 't',
+    title: 'Prueba',
+    columns: [
+      { key: 'name', label: 'Nombre' },
+      { key: 'grams', label: 'Gramos', type: 'grams' as const },
+      { key: 'ok', label: 'OK', type: 'boolean' as const },
+    ],
+    rows: [
+      { name: '=HYPERLINK("http://x")', grams: 1.5, ok: true },
+      { name: 'Oro, 24K', grams: 2, ok: false },
+    ],
     summary: { total: 3.5 },
   };
 

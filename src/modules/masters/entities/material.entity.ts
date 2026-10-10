@@ -1,7 +1,11 @@
 import { Column, Entity, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
 import { RecordStatus } from '../../../common/enums/domain.enums';
-import { gramsColumn, moneyColumn, purityColumn } from '../../../common/utils/numeric';
+import {
+  gramsColumn,
+  moneyColumn,
+  purityColumn,
+} from '../../../common/utils/numeric';
 import { MaterialCategory } from './material-category.entity';
 import { Unit } from './unit.entity';
 

@@ -1,4 +1,12 @@
-import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn, VersionColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  VersionColumn,
+} from 'typeorm';
 import { gramsColumn } from '../../../common/utils/numeric';
 import { Material } from '../../masters/entities/material.entity';
 import { Location } from '../../masters/entities/location.entity';

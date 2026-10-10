@@ -1,4 +1,11 @@
-import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { MediaKind, MediaPurpose } from '../../../common/enums/domain.enums';
 import { User } from '../../users/entities/user.entity';
 
@@ -25,7 +32,10 @@ export class MediaFile {
   @Column({ type: 'varchar', length: 120 })
   mimeType!: string;
 
-  @Column({ type: 'bigint', transformer: { to: (v: number) => v, from: (v: string) => Number(v) } })
+  @Column({
+    type: 'bigint',
+    transformer: { to: (v: number) => v, from: (v: string) => Number(v) },
+  })
   sizeBytes!: number;
 
   /** Hash SHA-256 del original: integridad y detección de duplicados. */

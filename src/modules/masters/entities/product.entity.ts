@@ -1,7 +1,11 @@
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
 import { RecordStatus } from '../../../common/enums/domain.enums';
-import { purityColumn, gramsColumn, numeric } from '../../../common/utils/numeric';
+import {
+  purityColumn,
+  gramsColumn,
+  numeric,
+} from '../../../common/utils/numeric';
 import { ProductFamily } from './product-family.entity';
 import { Material } from './material.entity';
 import { ProductVariant } from './product-variant.entity';
@@ -45,7 +49,13 @@ export class Product extends BaseEntity {
   requiresQualityCheck!: boolean;
 
   /** Tolerancia de merma de proceso (%) para conciliación. */
-  @Column({ type: 'numeric', precision: 6, scale: 3, default: 2, transformer: numeric })
+  @Column({
+    type: 'numeric',
+    precision: 6,
+    scale: 3,
+    default: 2,
+    transformer: numeric,
+  })
   lossTolerancePct!: number;
 
   /** Peso estándar de referencia por unidad (resumen de la ficha vigente). */

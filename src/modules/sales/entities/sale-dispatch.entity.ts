@@ -36,6 +36,9 @@ export class SaleDispatch extends BaseEntity {
   @Column({ default: false })
   reversed!: boolean;
 
-  @OneToMany(() => SaleDispatchLine, (l) => l.dispatch, { cascade: ['insert'], eager: true })
+  @OneToMany(() => SaleDispatchLine, (l) => l.dispatch, {
+    cascade: ['insert'],
+    eager: true,
+  })
   lines!: SaleDispatchLine[];
 }

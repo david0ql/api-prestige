@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
@@ -29,13 +37,19 @@ export class CatalogController {
   @Post('products/:id/sheets')
   @RequirePermissions(P.CATALOG_MANAGE)
   @ApiOperation({ summary: 'RF-042 / RN-023 · Nueva versión de ficha técnica' })
-  createVersion(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CreateSheetDto, @CurrentUser() user: AuthUser) {
+  createVersion(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateSheetDto,
+    @CurrentUser() user: AuthUser,
+  ) {
     return this.catalog.createVersion(id, dto, user);
   }
 
   @Post('products/:id/sheets/from-order/:orderId')
   @RequirePermissions(P.CATALOG_MANAGE)
-  @ApiOperation({ summary: 'CA-005 · Alimentar ficha técnica desde orden terminada' })
+  @ApiOperation({
+    summary: 'CA-005 · Alimentar ficha técnica desde orden terminada',
+  })
   fromOrder(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('orderId', ParseUUIDPipe) orderId: string,

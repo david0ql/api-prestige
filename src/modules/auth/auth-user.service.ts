@@ -17,11 +17,13 @@ export class AuthUserService {
 
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
-    @InjectRepository(RefreshToken) private readonly tokens: Repository<RefreshToken>,
+    @InjectRepository(RefreshToken)
+    private readonly tokens: Repository<RefreshToken>,
   ) {}
 
   invalidateUser(userId: string): void {
-    for (const key of this.cache.keys()) if (key.startsWith(`${userId}:`)) this.cache.delete(key);
+    for (const key of this.cache.keys())
+      if (key.startsWith(`${userId}:`)) this.cache.delete(key);
   }
 
   invalidateAll(): void {
@@ -38,12 +40,20 @@ export class AuthUserService {
       throw new UnauthorizedException('Usuario inactivo');
     }
     const session = await this.tokens.exists({
-      where: { userId, family: sessionId, revokedAt: IsNull(), expiresAt: MoreThan(new Date()) },
+      where: {
+        userId,
+        family: sessionId,
+        revokedAt: IsNull(),
+        expiresAt: MoreThan(new Date()),
+      },
     });
     if (!session) throw new UnauthorizedException('Sesión finalizada');
 
     const auth = AuthUserService.toAuthUser(user, sessionId);
-    this.cache.set(key, { user: auth, expires: Date.now() + AuthUserService.TTL_MS });
+    this.cache.set(key, {
+      user: auth,
+      expires: Date.now() + AuthUserService.TTL_MS,
+    });
     return auth;
   }
 

@@ -28,11 +28,15 @@ class EnvVars {
   DATABASE_PASSWORD!: string;
 
   @IsString()
-  @MinLength(32, { message: 'JWT_ACCESS_SECRET debe tener al menos 32 caracteres' })
+  @MinLength(32, {
+    message: 'JWT_ACCESS_SECRET debe tener al menos 32 caracteres',
+  })
   JWT_ACCESS_SECRET!: string;
 
   @IsString()
-  @MinLength(32, { message: 'MEDIA_SIGNING_SECRET debe tener al menos 32 caracteres' })
+  @MinLength(32, {
+    message: 'MEDIA_SIGNING_SECRET debe tener al menos 32 caracteres',
+  })
   MEDIA_SIGNING_SECRET!: string;
 }
 
@@ -44,7 +48,9 @@ export function validateEnv(config: Record<string, unknown>) {
   if (errors.length > 0) {
     throw new Error(
       'Configuración inválida: ' +
-        errors.map((e) => Object.values(e.constraints ?? {}).join(', ')).join('; '),
+        errors
+          .map((e) => Object.values(e.constraints ?? {}).join(', '))
+          .join('; '),
     );
   }
   return config;

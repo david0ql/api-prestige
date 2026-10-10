@@ -1,8 +1,25 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
 import { Permission } from '../../common/enums/permission.enum';
-import { AdminResetPasswordDto, CreateRoleDto, CreateUserDto, UpdateRoleDto, UpdateUserDto, UserQueryDto } from './dto/user.dto';
+import {
+  AdminResetPasswordDto,
+  CreateRoleDto,
+  CreateUserDto,
+  UpdateRoleDto,
+  UpdateUserDto,
+  UserQueryDto,
+} from './dto/user.dto';
 import { UsersService } from './users.service';
 
 @ApiTags('Usuarios y roles')
@@ -37,7 +54,10 @@ export class UsersController {
   @Post('users/:id/reset-password')
   @HttpCode(204)
   @RequirePermissions(Permission.USERS_MANAGE)
-  reset(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AdminResetPasswordDto) {
+  reset(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AdminResetPasswordDto,
+  ) {
     return this.service.resetPassword(id, dto.password);
   }
 
@@ -68,7 +88,10 @@ export class UsersController {
 
   @Patch('roles/:id')
   @RequirePermissions(Permission.ROLES_MANAGE)
-  updateRole(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateRoleDto) {
+  updateRole(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateRoleDto,
+  ) {
     return this.service.updateRole(id, dto);
   }
 }

@@ -1,6 +1,9 @@
 import { Column, Entity, Index, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
-import { OperationStatus, OperationType } from '../../../common/enums/domain.enums';
+import {
+  OperationStatus,
+  OperationType,
+} from '../../../common/enums/domain.enums';
 import { gramsColumn, moneyColumn } from '../../../common/utils/numeric';
 import { Customer } from '../../masters/entities/customer.entity';
 
@@ -25,7 +28,11 @@ export class CustomerOperation extends BaseEntity {
   @Column({ type: 'enum', enum: OperationType, default: OperationType.SALE })
   type!: OperationType;
 
-  @Column({ type: 'enum', enum: OperationStatus, default: OperationStatus.OPEN })
+  @Column({
+    type: 'enum',
+    enum: OperationStatus,
+    default: OperationStatus.OPEN,
+  })
   status!: OperationStatus;
 
   @Column({ type: 'varchar', length: 200 })

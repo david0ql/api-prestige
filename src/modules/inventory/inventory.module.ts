@@ -10,7 +10,15 @@ import { InventoryService } from './inventory.service';
 
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([InventoryMovement, InventoryBalance, MaterialLot, Location, OrderMaterialRequirement])],
+  imports: [
+    TypeOrmModule.forFeature([
+      InventoryMovement,
+      InventoryBalance,
+      MaterialLot,
+      Location,
+      OrderMaterialRequirement,
+    ]),
+  ],
   controllers: [InventoryController],
   providers: [InventoryService],
   exports: [InventoryService],

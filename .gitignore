@@ -5,3 +5,4 @@ storage
 storage-test
 .env
 *.log
+storage-e2e

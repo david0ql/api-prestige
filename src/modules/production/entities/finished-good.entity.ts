@@ -5,7 +5,11 @@ import {
   PurityStatus,
   QualityResult,
 } from '../../../common/enums/domain.enums';
-import { gramsColumn, moneyColumn, purityColumn } from '../../../common/utils/numeric';
+import {
+  gramsColumn,
+  moneyColumn,
+  purityColumn,
+} from '../../../common/utils/numeric';
 import { Product } from '../../masters/entities/product.entity';
 import { ProductVariant } from '../../masters/entities/product-variant.entity';
 import { Location } from '../../masters/entities/location.entity';
@@ -61,7 +65,11 @@ export class FinishedGood extends BaseEntity {
   @Column(gramsColumn)
   availableGrams!: number;
 
-  @Column({ type: 'enum', enum: FinishedGoodStatus, default: FinishedGoodStatus.QUARANTINE })
+  @Column({
+    type: 'enum',
+    enum: FinishedGoodStatus,
+    default: FinishedGoodStatus.QUARANTINE,
+  })
   status!: FinishedGoodStatus;
 
   @Column({ type: 'enum', enum: QualityResult, default: QualityResult.PENDING })

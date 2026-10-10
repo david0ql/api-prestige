@@ -1,5 +1,15 @@
-import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { WeighingPurpose, WeighingSource } from '../../../common/enums/domain.enums';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import {
+  WeighingPurpose,
+  WeighingSource,
+} from '../../../common/enums/domain.enums';
 import { gramsColumn } from '../../../common/utils/numeric';
 import { User } from '../../users/entities/user.entity';
 import { Material } from '../../masters/entities/material.entity';

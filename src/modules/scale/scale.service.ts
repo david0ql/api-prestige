@@ -1,8 +1,26 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { startOfDay, endOfDay } from '../../common/utils/dates';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, DataSource, EntityManager, FindOptionsWhere, ILike, IsNull, Repository } from 'typeorm';
+import {
+  Between,
+  DataSource,
+  EntityManager,
+  FindOptionsWhere,
+  ILike,
+  IsNull,
+  Repository,
+} from 'typeorm';
 import { paginated } from '../../common/dto/pagination.dto';
-import { AuditAction, WeighingPurpose, WeighingSource } from '../../common/enums/domain.enums';
+import {
+  AuditAction,
+  WeighingPurpose,
+  WeighingSource,
+} from '../../common/enums/domain.enums';
 import { Permission } from '../../common/enums/permission.enum';
 import type { AuthUser } from '../../common/types/auth-user';
 import { BusinessRuleException } from '../../common/utils/business-error';
@@ -10,7 +28,11 @@ import { roundGrams } from '../../common/utils/numeric';
 import { AuditService } from '../audit/audit.service';
 import { MastersService } from '../masters/masters.service';
 import { SequenceService } from '../sequences/sequence.service';
-import { AdjustWeighingDto, CaptureWeighingDto, WeighingQueryDto } from './dto/scale.dto';
+import {
+  AdjustWeighingDto,
+  CaptureWeighingDto,
+  WeighingQueryDto,
+} from './dto/scale.dto';
 import { WeighingAdjustment } from './entities/weighing-adjustment.entity';
 import { Weighing } from './entities/weighing.entity';
 import { parseScaleReading } from './scale.util';
@@ -20,8 +42,10 @@ import { parseScaleReading } from './scale.util';
 export class ScaleService {
   constructor(
     private readonly ds: DataSource,
-    @InjectRepository(Weighing) private readonly weighings: Repository<Weighing>,
-    @InjectRepository(WeighingAdjustment) private readonly adjustments: Repository<WeighingAdjustment>,
+    @InjectRepository(Weighing)
+    private readonly weighings: Repository<Weighing>,
+    @InjectRepository(WeighingAdjustment)
+    private readonly adjustments: Repository<WeighingAdjustment>,
     private readonly seq: SequenceService,
     private readonly audit: AuditService,
     private readonly masters: MastersService,
@@ -30,25 +54,41 @@ export class ScaleService {
   async capture(dto: CaptureWeighingDto, user: AuthUser): Promise<Weighing> {
     const tare = dto.tareGrams ?? 0;
     const net = roundGrams(dto.grossGrams - tare);
-    if (net <= 0) throw new BusinessRuleException('WEIGHT_NOT_POSITIVE', 'El peso neto debe ser mayor que cero');
+    if (net <= 0)
+      throw new BusinessRuleException(
+        'WEIGHT_NOT_POSITIVE',
+        'El peso neto debe ser mayor que cero',
+      );
     if (dto.materialId) await this.masters.activeMaterial(dto.materialId);
 
     let stable = dto.stable ?? true;
     if (dto.source === WeighingSource.MANUAL) {
       if (!user.permissions.includes(Permission.SCALE_MANUAL)) {
-        throw new ForbiddenException('Su rol no está autorizado para captura manual de peso');
+        throw new ForbiddenException(
+          'Su rol no está autorizado para captura manual de peso',
+        );
       }
     } else {
       // RN-019: el peso enviado debe coincidir con la trama cruda de la balanza.
       const parsed = parseScaleReading(dto.rawReading ?? '');
-      if (!parsed) throw new BusinessRuleException('SCALE_READING_INVALID', 'No se pudo interpretar la lectura de la balanza');
-      if (Math.abs(roundGrams(parsed.grams) - roundGrams(dto.grossGrams)) > 0.0001) {
+      if (!parsed)
+        throw new BusinessRuleException(
+          'SCALE_READING_INVALID',
+          'No se pudo interpretar la lectura de la balanza',
+        );
+      if (
+        Math.abs(roundGrams(parsed.grams) - roundGrams(dto.grossGrams)) > 0.0001
+      ) {
         throw new BusinessRuleException(
           'SCALE_READING_MISMATCH',
           'El peso capturado no coincide con la lectura de la balanza: no se permite alterarlo',
         );
       }
-      if (!parsed.stable) throw new BusinessRuleException('SCALE_UNSTABLE', 'La lectura de la balanza no es estable');
+      if (!parsed.stable)
+        throw new BusinessRuleException(
+          'SCALE_UNSTABLE',
+          'La lectura de la balanza no es estable',
+        );
       stable = parsed.stable;
     }
 
@@ -65,7 +105,10 @@ export class ScaleService {
         rawReading: dto.rawReading ?? null,
         deviceInfo: dto.deviceInfo ?? null,
         stable,
-        manualReason: dto.source === WeighingSource.MANUAL ? (dto.manualReason ?? null) : null,
+        manualReason:
+          dto.source === WeighingSource.MANUAL
+            ? (dto.manualReason ?? null)
+            : null,
         notes: dto.notes ?? null,
         capturedById: user.id,
       });
@@ -93,11 +136,16 @@ export class ScaleService {
     if (q.unused === 'true') where.usedById = IsNull();
     if (q.from || q.to) {
       where.capturedAt = Between(
-        q.from ? new Date(q.from) : new Date(0),
-        q.to ? new Date(`${q.to.slice(0, 10)}T23:59:59.999Z`) : new Date(),
+        q.from ? startOfDay(q.from) : new Date(0),
+        q.to ? endOfDay(q.to) : new Date(),
       );
     }
-    const finalWhere = q.search ? [{ ...where, number: ILike(`%${q.search}%`) }, { ...where, notes: ILike(`%${q.search}%`) }] : where;
+    const finalWhere = q.search
+      ? [
+          { ...where, number: ILike(`%${q.search}%`) },
+          { ...where, notes: ILike(`%${q.search}%`) },
+        ]
+      : where;
     return paginated(
       await this.weighings.findAndCount({
         where: finalWhere,
@@ -111,7 +159,10 @@ export class ScaleService {
   }
 
   async get(id: string) {
-    const w = await this.weighings.findOne({ where: { id }, relations: { capturedBy: true, material: true } });
+    const w = await this.weighings.findOne({
+      where: { id },
+      relations: { capturedBy: true, material: true },
+    });
     if (!w) throw new NotFoundException('Pesaje no encontrado');
     const adjustments = await this.adjustments.find({
       where: { weighingId: id },
@@ -124,7 +175,11 @@ export class ScaleService {
   /** RN-019: el ajuste no edita el pesaje, deja rastro con valor previo, nuevo y motivo. */
   async adjust(id: string, dto: AdjustWeighingDto, user: AuthUser) {
     return this.ds.transaction(async (m) => {
-      const w = await m.findOne(Weighing, { where: { id }, lock: { mode: 'pessimistic_write' }, loadEagerRelations: false });
+      const w = await m.findOne(Weighing, {
+        where: { id },
+        lock: { mode: 'pessimistic_write' },
+        loadEagerRelations: false,
+      });
       if (!w) throw new NotFoundException('Pesaje no encontrado');
       if (w.usedById) {
         throw new BusinessRuleException(
@@ -173,14 +228,28 @@ export class ScaleService {
     usedById: string,
     materialId?: string | null,
   ): Promise<Weighing> {
-    const w = await m.findOne(Weighing, { where: { id: weighingId }, lock: { mode: 'pessimistic_write' }, loadEagerRelations: false });
+    const w = await m.findOne(Weighing, {
+      where: { id: weighingId },
+      lock: { mode: 'pessimistic_write' },
+      loadEagerRelations: false,
+    });
     if (!w) throw new BadRequestException('Pesaje inexistente');
-    if (w.usedById) throw new BusinessRuleException('WEIGHING_ALREADY_USED', `El pesaje ${w.number} ya fue utilizado`);
+    if (w.usedById)
+      throw new BusinessRuleException(
+        'WEIGHING_ALREADY_USED',
+        `El pesaje ${w.number} ya fue utilizado`,
+      );
     if (!purposes.includes(w.purpose)) {
-      throw new BusinessRuleException('WEIGHING_PURPOSE', `El pesaje ${w.number} no corresponde a esta operación`);
+      throw new BusinessRuleException(
+        'WEIGHING_PURPOSE',
+        `El pesaje ${w.number} no corresponde a esta operación`,
+      );
     }
     if (materialId && w.materialId && w.materialId !== materialId) {
-      throw new BusinessRuleException('WEIGHING_MATERIAL', `El pesaje ${w.number} es de otro material`);
+      throw new BusinessRuleException(
+        'WEIGHING_MATERIAL',
+        `El pesaje ${w.number} es de otro material`,
+      );
     }
     w.usedByType = usedByType;
     w.usedById = usedById;

@@ -7,7 +7,9 @@ import { AppModule } from './app.module';
 import { setupApp } from './setup-app';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: false });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: false,
+  });
   setupApp(app);
   const config = app.get(ConfigService);
 
@@ -28,7 +30,9 @@ async function bootstrap() {
 
   const port = config.get<number>('port', 3300);
   await app.listen(port);
-  new Logger('Bootstrap').log(`API en http://localhost:${port}/${config.get('apiPrefix')} · docs en /docs`);
+  new Logger('Bootstrap').log(
+    `API en http://localhost:${port}/${config.get('apiPrefix')} · docs en /docs`,
+  );
 }
 
 void bootstrap();

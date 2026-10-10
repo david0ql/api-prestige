@@ -1,6 +1,9 @@
 import { Column, Entity, Index, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
-import { DiscrepancyStatus, DiscrepancyType } from '../../../common/enums/domain.enums';
+import {
+  DiscrepancyStatus,
+  DiscrepancyType,
+} from '../../../common/enums/domain.enums';
 import { gramsColumn, numeric } from '../../../common/utils/numeric';
 import { Material } from '../../masters/entities/material.entity';
 
@@ -37,10 +40,22 @@ export class Discrepancy extends BaseEntity {
   grams!: number;
 
   /** Porcentaje sobre la base de referencia (entregado o consumido). */
-  @Column({ type: 'numeric', precision: 9, scale: 3, nullable: true, transformer: numeric })
+  @Column({
+    type: 'numeric',
+    precision: 9,
+    scale: 3,
+    nullable: true,
+    transformer: numeric,
+  })
   percent!: number | null;
 
-  @Column({ type: 'numeric', precision: 6, scale: 3, nullable: true, transformer: numeric })
+  @Column({
+    type: 'numeric',
+    precision: 6,
+    scale: 3,
+    nullable: true,
+    transformer: numeric,
+  })
   tolerancePct!: number | null;
 
   @Column({ default: false })
@@ -56,7 +71,11 @@ export class Discrepancy extends BaseEntity {
   @Column({ type: 'varchar', length: 160, nullable: true })
   responsibleParty!: string | null;
 
-  @Column({ type: 'enum', enum: DiscrepancyStatus, default: DiscrepancyStatus.PENDING })
+  @Column({
+    type: 'enum',
+    enum: DiscrepancyStatus,
+    default: DiscrepancyStatus.PENDING,
+  })
   status!: DiscrepancyStatus;
 
   @Column({ type: 'varchar', length: 40, nullable: true })

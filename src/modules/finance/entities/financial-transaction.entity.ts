@@ -60,13 +60,21 @@ export class FinancialTransaction extends BaseEntity {
   @Column({ type: 'varchar', length: 160, nullable: true })
   supportReference!: string | null;
 
-  @Column({ type: 'enum', enum: TransactionSource, default: TransactionSource.MANUAL })
+  @Column({
+    type: 'enum',
+    enum: TransactionSource,
+    default: TransactionSource.MANUAL,
+  })
   source!: TransactionSource;
 
   @Column({ type: 'uuid', nullable: true })
   sourceId!: string | null;
 
-  @Column({ type: 'enum', enum: TransactionStatus, default: TransactionStatus.POSTED })
+  @Column({
+    type: 'enum',
+    enum: TransactionStatus,
+    default: TransactionStatus.POSTED,
+  })
   status!: TransactionStatus;
 
   @Column({ type: 'uuid', nullable: true })

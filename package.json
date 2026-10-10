@@ -19,7 +19,9 @@
     "migration:run": "npm run typeorm -- migration:run",
     "migration:revert": "npm run typeorm -- migration:revert",
     "seed": "ts-node -r tsconfig-paths/register src/database/seeds/run-seed.ts",
-    "seed:demo": "ts-node -r tsconfig-paths/register src/database/seeds/run-seed.ts --demo"
+    "seed:demo": "ts-node -r tsconfig-paths/register src/database/seeds/run-seed.ts --demo",
+    "db:reset": "ts-node -r tsconfig-paths/register src/database/seeds/reset-db.ts",
+    "demo": "node scripts/demo-scenario.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.0",
@@ -78,12 +80,22 @@
     "typescript-eslint": "^8.20.0"
   },
   "jest": {
-    "moduleFileExtensions": ["js", "json", "ts"],
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
-    "transform": { "^.+\\.(t|j)s$": "ts-jest" },
-    "moduleNameMapper": { "^@/(.*)$": "<rootDir>/$1" },
-    "collectCoverageFrom": ["**/*.(t|j)s"],
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/$1"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }

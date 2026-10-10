@@ -19,9 +19,11 @@ export function computeRequirements(
 ): ComputedRequirement[] {
   const active = standards.filter((s) => s.active);
   const byMaterial = new Map<string, ConsumptionStandard>();
-  for (const s of active.filter((x) => !x.variantId)) byMaterial.set(s.materialId, s);
+  for (const s of active.filter((x) => !x.variantId))
+    byMaterial.set(s.materialId, s);
   if (target.variantId) {
-    for (const s of active.filter((x) => x.variantId === target.variantId)) byMaterial.set(s.materialId, s);
+    for (const s of active.filter((x) => x.variantId === target.variantId))
+      byMaterial.set(s.materialId, s);
   }
   const out: ComputedRequirement[] = [];
   for (const s of byMaterial.values()) {
@@ -34,10 +36,18 @@ export function computeRequirements(
         qty = s.quantity * (target.units ?? 0);
         break;
       case StandardBasis.PER_LOT:
-        qty = Math.ceil(target.grams / (s.lotSizeGrams || target.grams || 1)) * s.quantity;
+        qty =
+          Math.ceil(target.grams / (s.lotSizeGrams || target.grams || 1)) *
+          s.quantity;
         break;
     }
-    if (qty > 0) out.push({ materialId: s.materialId, requiredGrams: roundGrams(qty), tolerancePct: s.tolerancePct, standardId: s.id });
+    if (qty > 0)
+      out.push({
+        materialId: s.materialId,
+        requiredGrams: roundGrams(qty),
+        tolerancePct: s.tolerancePct,
+        standardId: s.id,
+      });
   }
   return out;
 }

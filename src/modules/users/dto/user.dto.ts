@@ -1,4 +1,9 @@
-import { ApiProperty, ApiPropertyOptional, PartialType, OmitType } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  PartialType,
+  OmitType,
+} from '@nestjs/swagger';
 import {
   ArrayUnique,
   IsArray,
@@ -18,7 +23,9 @@ import { PaginationQueryDto } from '../../../common/dto/pagination.dto';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'operaciones2' })
-  @Matches(/^[a-zA-Z0-9._-]{3,60}$/, { message: 'Usuario: 3-60 caracteres alfanuméricos, punto, guion' })
+  @Matches(/^[a-zA-Z0-9._-]{3,60}$/, {
+    message: 'Usuario: 3-60 caracteres alfanuméricos, punto, guion',
+  })
   username!: string;
 
   @ApiProperty()
@@ -57,7 +64,9 @@ export class CreateUserDto {
   mustChangePassword?: boolean;
 }
 
-export class UpdateUserDto extends PartialType(OmitType(CreateUserDto, ['password', 'username'] as const)) {
+export class UpdateUserDto extends PartialType(
+  OmitType(CreateUserDto, ['password', 'username'] as const),
+) {
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
@@ -84,7 +93,9 @@ export class UserQueryDto extends PaginationQueryDto {
 
 export class CreateRoleDto {
   @ApiProperty({ example: 'SUPERVISOR' })
-  @Matches(/^[A-Z0-9_]{2,40}$/, { message: 'Código: mayúsculas, números y guion bajo' })
+  @Matches(/^[A-Z0-9_]{2,40}$/, {
+    message: 'Código: mayúsculas, números y guion bajo',
+  })
   code!: string;
 
   @ApiProperty()
@@ -110,7 +121,9 @@ export class CreateRoleDto {
   isWorkshopRole?: boolean;
 }
 
-export class UpdateRoleDto extends PartialType(OmitType(CreateRoleDto, ['code'] as const)) {
+export class UpdateRoleDto extends PartialType(
+  OmitType(CreateRoleDto, ['code'] as const),
+) {
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()

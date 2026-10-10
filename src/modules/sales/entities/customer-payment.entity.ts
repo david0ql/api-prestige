@@ -37,7 +37,11 @@ export class CustomerPayment extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   notes!: string | null;
 
-  @Column({ type: 'enum', enum: TransactionStatus, default: TransactionStatus.POSTED })
+  @Column({
+    type: 'enum',
+    enum: TransactionStatus,
+    default: TransactionStatus.POSTED,
+  })
   status!: TransactionStatus;
 
   @Column({ type: 'uuid', nullable: true })

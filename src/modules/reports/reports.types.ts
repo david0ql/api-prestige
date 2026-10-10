@@ -1,4 +1,12 @@
-export type ColumnType = 'text' | 'grams' | 'money' | 'number' | 'percent' | 'date' | 'datetime' | 'boolean';
+export type ColumnType =
+  | 'text'
+  | 'grams'
+  | 'money'
+  | 'number'
+  | 'percent'
+  | 'date'
+  | 'datetime'
+  | 'boolean';
 
 export interface ReportColumn {
   key: string;

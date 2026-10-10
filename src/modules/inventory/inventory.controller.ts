@@ -1,8 +1,19 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuditAccess } from '../../common/decorators/audit-access.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { RequireAnyPermission, RequirePermissions } from '../../common/decorators/permissions.decorator';
+import {
+  RequireAnyPermission,
+  RequirePermissions,
+} from '../../common/decorators/permissions.decorator';
 import { Permission as P } from '../../common/enums/permission.enum';
 import type { AuthUser } from '../../common/types/auth-user';
 import { assertWorkshopAccess } from '../../common/utils/scope';
@@ -24,7 +35,9 @@ export class InventoryController {
 
   @Post('entries')
   @RequirePermissions(P.INVENTORY_ENTRY, P.SCALE_WEIGH)
-  @ApiOperation({ summary: 'RF-001 · Entrada de material pesada en Balanza Madre' })
+  @ApiOperation({
+    summary: 'RF-001 · Entrada de material pesada en Balanza Madre',
+  })
   entry(@Body() dto: RegisterEntryDto, @CurrentUser() user: AuthUser) {
     return this.inventory.registerEntry(dto, user);
   }
@@ -44,7 +57,11 @@ export class InventoryController {
   @Post('movements/:id/reverse')
   @RequirePermissions(P.REVERSALS_AUTHORIZE)
   @ApiOperation({ summary: 'RN-015 · Reverso auditable de movimiento' })
-  reverse(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ReverseDto, @CurrentUser() user: AuthUser) {
+  reverse(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ReverseDto,
+    @CurrentUser() user: AuthUser,
+  ) {
     return this.inventory.reverse(id, dto, user);
   }
 
@@ -57,7 +74,10 @@ export class InventoryController {
 
   @Get('summary')
   @RequirePermissions(P.INVENTORY_READ)
-  @ApiOperation({ summary: 'RF-005 · Inventario global por material (oficina, tránsito, talleres)' })
+  @ApiOperation({
+    summary:
+      'RF-005 · Inventario global por material (oficina, tránsito, talleres)',
+  })
   summary(@CurrentUser() user: AuthUser) {
     return this.inventory.globalSummary(user);
   }
@@ -65,8 +85,14 @@ export class InventoryController {
   @Get('workshops/:workshopId/custody')
   @RequireAnyPermission(P.INVENTORY_READ, P.WORKSHOP_PORTAL)
   @AuditAccess('WorkshopCustody')
-  @ApiOperation({ summary: 'RF-006 · Material en custodia del taller (por orden y desde cuándo)' })
-  custody(@Param('workshopId', ParseUUIDPipe) workshopId: string, @CurrentUser() user: AuthUser) {
+  @ApiOperation({
+    summary:
+      'RF-006 · Material en custodia del taller (por orden y desde cuándo)',
+  })
+  custody(
+    @Param('workshopId', ParseUUIDPipe) workshopId: string,
+    @CurrentUser() user: AuthUser,
+  ) {
     assertWorkshopAccess(user, workshopId);
     return this.inventory.workshopCustody(workshopId);
   }
@@ -79,7 +105,10 @@ export class InventoryController {
 
   @Get('movements/:id')
   @RequireAnyPermission(P.INVENTORY_READ, P.WORKSHOP_PORTAL)
-  movement(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
+  movement(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthUser,
+  ) {
     return this.inventory.getMovement(id, user);
   }
 

@@ -1,6 +1,20 @@
-import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { MovementStatus, MovementType } from '../../../common/enums/domain.enums';
-import { gramsColumn, moneyColumn, purityColumn } from '../../../common/utils/numeric';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import {
+  MovementStatus,
+  MovementType,
+} from '../../../common/enums/domain.enums';
+import {
+  gramsColumn,
+  moneyColumn,
+  purityColumn,
+} from '../../../common/utils/numeric';
 import { Material } from '../../masters/entities/material.entity';
 import { Location } from '../../masters/entities/location.entity';
 import { User } from '../../users/entities/user.entity';
@@ -25,7 +39,11 @@ export class InventoryMovement {
   @Column({ type: 'enum', enum: MovementType })
   type!: MovementType;
 
-  @Column({ type: 'enum', enum: MovementStatus, default: MovementStatus.CONFIRMED })
+  @Column({
+    type: 'enum',
+    enum: MovementStatus,
+    default: MovementStatus.CONFIRMED,
+  })
   status!: MovementStatus;
 
   @ManyToOne(() => Material, { nullable: false, eager: true })

@@ -8,7 +8,10 @@ import { Product } from './product.entity';
 @Entity('product_variant')
 @Index(['productId', 'code'], { unique: true })
 export class ProductVariant extends BaseEntity {
-  @ManyToOne(() => Product, (p) => p.variants, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => Product, (p) => p.variants, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   product!: Product;
 
   @Column()

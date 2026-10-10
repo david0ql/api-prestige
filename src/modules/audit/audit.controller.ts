@@ -1,7 +1,15 @@
+import { startOfDay, endOfDay } from '../../common/utils/dates';
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiPropertyOptional, ApiTags } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsDateString, IsEnum, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+} from 'class-validator';
 import { Between, FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { PaginationQueryDto, paginated } from '../../common/dto/pagination.dto';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
@@ -43,7 +51,9 @@ export class AuditQueryDto extends PaginationQueryDto {
   to?: string;
 }
 
-export function auditWhere(q: AuditQueryDto): FindOptionsWhere<AuditLog> | FindOptionsWhere<AuditLog>[] {
+export function auditWhere(
+  q: AuditQueryDto,
+): FindOptionsWhere<AuditLog> | FindOptionsWhere<AuditLog>[] {
   const where: FindOptionsWhere<AuditLog> = {};
   if (q.action) where.action = q.action;
   if (q.entityType) where.entityType = q.entityType;
@@ -51,8 +61,8 @@ export function auditWhere(q: AuditQueryDto): FindOptionsWhere<AuditLog> | FindO
   if (q.userId) where.userId = q.userId;
   if (q.from || q.to) {
     where.createdAt = Between(
-      q.from ? new Date(q.from) : new Date(0),
-      q.to ? new Date(`${q.to.slice(0, 10)}T23:59:59.999Z`) : new Date(),
+      q.from ? startOfDay(q.from) : new Date(0),
+      q.to ? endOfDay(q.to) : new Date(),
     );
   }
   if (q.search) {
@@ -68,7 +78,9 @@ export function auditWhere(q: AuditQueryDto): FindOptionsWhere<AuditLog> | FindO
 @ApiTags('Auditoría')
 @Controller('audit')
 export class AuditController {
-  constructor(@InjectRepository(AuditLog) private readonly repo: Repository<AuditLog>) {}
+  constructor(
+    @InjectRepository(AuditLog) private readonly repo: Repository<AuditLog>,
+  ) {}
 
   @Get()
   @RequirePermissions(Permission.AUDIT_READ)

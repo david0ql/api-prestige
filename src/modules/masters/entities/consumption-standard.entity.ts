@@ -12,7 +12,10 @@ import { Material } from './material.entity';
  */
 @Entity('consumption_standard')
 export class ConsumptionStandard extends BaseEntity {
-  @ManyToOne(() => Product, (p) => p.standards, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => Product, (p) => p.standards, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   product!: Product;
 
   @Column()
@@ -31,7 +34,11 @@ export class ConsumptionStandard extends BaseEntity {
   @Column()
   materialId!: string;
 
-  @Column({ type: 'enum', enum: StandardBasis, default: StandardBasis.PER_GRAM })
+  @Column({
+    type: 'enum',
+    enum: StandardBasis,
+    default: StandardBasis.PER_GRAM,
+  })
   basis!: StandardBasis;
 
   /** Cantidad de insumo (g) por la base indicada. */
@@ -43,7 +50,13 @@ export class ConsumptionStandard extends BaseEntity {
   lotSizeGrams!: number | null;
 
   /** Tolerancia (%) para alertas de consumo y solicitudes. */
-  @Column({ type: 'numeric', precision: 6, scale: 3, default: 5, transformer: numeric })
+  @Column({
+    type: 'numeric',
+    precision: 6,
+    scale: 3,
+    default: 5,
+    transformer: numeric,
+  })
   tolerancePct!: number;
 
   @Column({ type: 'text', nullable: true })

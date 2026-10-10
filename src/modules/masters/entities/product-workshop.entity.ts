@@ -7,13 +7,20 @@ import { Workshop } from './workshop.entity';
 @Entity('product_workshop')
 @Index(['productId', 'workshopId'], { unique: true })
 export class ProductWorkshop extends BaseEntity {
-  @ManyToOne(() => Product, (p) => p.workshops, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => Product, (p) => p.workshops, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   product!: Product;
 
   @Column()
   productId!: string;
 
-  @ManyToOne(() => Workshop, (w) => w.products, { nullable: false, onDelete: 'CASCADE', eager: true })
+  @ManyToOne(() => Workshop, (w) => w.products, {
+    nullable: false,
+    onDelete: 'CASCADE',
+    eager: true,
+  })
   workshop!: Workshop;
 
   @Column()

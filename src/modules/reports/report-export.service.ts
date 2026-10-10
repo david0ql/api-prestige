@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import ExcelJS from 'exceljs';
+import { asText } from '../../common/utils/numeric';
 import { TabularReport } from './reports.types';
 
 const GOLD = 'FFB8913A';
@@ -12,14 +13,20 @@ export class ReportExportService {
     const wb = new ExcelJS.Workbook();
     wb.creator = 'Prestige Gold';
     wb.created = new Date();
-    const ws = wb.addWorksheet(report.title.slice(0, 31), { views: [{ state: 'frozen', ySplit: 4 }] });
+    const ws = wb.addWorksheet(report.title.slice(0, 31), {
+      views: [{ state: 'frozen', ySplit: 4 }],
+    });
     ws.mergeCells(1, 1, 1, Math.max(report.columns.length, 1));
     const title = ws.getCell(1, 1);
     title.value = `PRESTIGE GOLD · ${report.title}`;
     title.font = { bold: true, size: 14, color: { argb: GOLD } };
     title.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: INK } };
     ws.getRow(1).height = 24;
-    const filterText = report.filters ? Object.entries(report.filters).map(([k, v]) => `${k}: ${String(v)}`).join('   ') : '';
+    const filterText = report.filters
+      ? Object.entries(report.filters)
+          .map(([k, v]) => `${k}: ${String(v)}`)
+          .join('   ')
+      : '';
     ws.getCell(2, 1).value = `${report.description ?? ''} ${filterText}`.trim();
     ws.getCell(2, 1).font = { italic: true, color: { argb: 'FF6B6255' } };
     const header = ws.getRow(4);
@@ -27,7 +34,11 @@ export class ReportExportService {
       const cell = header.getCell(i + 1);
       cell.value = c.label;
       cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GOLD } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: GOLD },
+      };
       cell.alignment = { vertical: 'middle' };
     });
     report.rows.forEach((r, ri) => {
@@ -37,9 +48,11 @@ export class ReportExportService {
         const cell = row.getCell(ci + 1);
         if (v === null || v === undefined) cell.value = '';
         else if (c.type === 'boolean') cell.value = v ? 'Sí' : 'No';
-        else if (c.type === 'date' || c.type === 'datetime') cell.value = v instanceof Date ? v : new Date(String(v));
-        else if (['grams', 'money', 'number', 'percent'].includes(c.type ?? '')) cell.value = Number(v);
-        else cell.value = String(v);
+        else if (c.type === 'date' || c.type === 'datetime')
+          cell.value = v instanceof Date ? v : new Date(asText(v));
+        else if (['grams', 'money', 'number', 'percent'].includes(c.type ?? ''))
+          cell.value = Number(v);
+        else cell.value = asText(v);
         if (c.type === 'grams') cell.numFmt = '#,##0.0000" g"';
         if (c.type === 'money') cell.numFmt = '"$"#,##0.00';
         if (c.type === 'percent') cell.numFmt = '0.00"%"';
@@ -48,9 +61,15 @@ export class ReportExportService {
       });
     });
     report.columns.forEach((c, i) => {
-      ws.getColumn(i + 1).width = Math.min(48, Math.max(12, c.label.length + 4));
+      ws.getColumn(i + 1).width = Math.min(
+        48,
+        Math.max(12, c.label.length + 4),
+      );
     });
-    ws.autoFilter = { from: { row: 4, column: 1 }, to: { row: 4, column: report.columns.length } };
+    ws.autoFilter = {
+      from: { row: 4, column: 1 },
+      to: { row: 4, column: report.columns.length },
+    };
     if (report.summary) {
       const s = wb.addWorksheet('Resumen');
       s.addRow(['Indicador', 'Valor']).font = { bold: true };
@@ -64,13 +83,21 @@ export class ReportExportService {
   toCsv(report: TabularReport): string {
     const esc = (v: unknown) => {
       if (v === null || v === undefined) return '';
-      const s = v instanceof Date ? v.toISOString() : typeof v === 'boolean' ? (v ? 'Sí' : 'No') : String(v);
+      const s =
+        v instanceof Date
+          ? v.toISOString()
+          : typeof v === 'boolean'
+            ? v
+              ? 'Sí'
+              : 'No'
+            : asText(v);
       // Neutraliza inyección de fórmulas en Excel (=, +, -, @).
       const safe = /^[=+\-@]/.test(s) && Number.isNaN(Number(s)) ? `'${s}` : s;
       return /[",\n;]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
     };
     const lines = [report.columns.map((c) => esc(c.label)).join(',')];
-    for (const r of report.rows) lines.push(report.columns.map((c) => esc(r[c.key])).join(','));
+    for (const r of report.rows)
+      lines.push(report.columns.map((c) => esc(r[c.key])).join(','));
     return '﻿' + lines.join('\n');
   }
 }

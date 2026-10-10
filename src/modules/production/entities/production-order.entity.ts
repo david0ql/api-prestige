@@ -107,6 +107,8 @@ export class ProductionOrder extends BaseEntity {
   @Column({ type: 'jsonb', nullable: true })
   reconciliationSnapshot!: Record<string, unknown> | null;
 
-  @OneToMany(() => OrderMaterialRequirement, (r) => r.order, { cascade: ['insert', 'update'] })
+  @OneToMany(() => OrderMaterialRequirement, (r) => r.order, {
+    cascade: ['insert', 'update'],
+  })
   requirements!: OrderMaterialRequirement[];
 }

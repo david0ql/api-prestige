@@ -1,4 +1,7 @@
-import { ConflictException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  ConflictException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 
 /**
  * Violación de regla de negocio (RN-xxx / validaciones críticas). 422 con código

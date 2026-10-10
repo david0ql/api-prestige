@@ -15,7 +15,10 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { PaginationQueryDto } from '../../../common/dto/pagination.dto';
-import { WeighingPurpose, WeighingSource } from '../../../common/enums/domain.enums';
+import {
+  WeighingPurpose,
+  WeighingSource,
+} from '../../../common/enums/domain.enums';
 
 export class CaptureWeighingDto {
   @ApiProperty({ enum: WeighingPurpose })
@@ -43,7 +46,10 @@ export class CaptureWeighingDto {
   @Min(0)
   tareGrams?: number;
 
-  @ApiPropertyOptional({ description: 'Trama cruda leída de la balanza (obligatoria si source=SCALE)' })
+  @ApiPropertyOptional({
+    description:
+      'Trama cruda leída de la balanza (obligatoria si source=SCALE)',
+  })
   @ValidateIf((o: CaptureWeighingDto) => o.source === WeighingSource.SCALE)
   @IsString()
   @MinLength(1)
@@ -64,7 +70,9 @@ export class CaptureWeighingDto {
   @ApiPropertyOptional({ description: 'Obligatorio si source=MANUAL (RF-003)' })
   @ValidateIf((o: CaptureWeighingDto) => o.source === WeighingSource.MANUAL)
   @IsString()
-  @MinLength(5, { message: 'Indique el motivo de la captura manual (mínimo 5 caracteres)' })
+  @MinLength(5, {
+    message: 'Indique el motivo de la captura manual (mínimo 5 caracteres)',
+  })
   @MaxLength(500)
   manualReason?: string;
 
@@ -99,7 +107,9 @@ export class WeighingQueryDto extends PaginationQueryDto {
   @IsEnum(WeighingSource)
   source?: WeighingSource;
 
-  @ApiPropertyOptional({ description: 'true = solo pesajes aún no usados en un documento' })
+  @ApiPropertyOptional({
+    description: 'true = solo pesajes aún no usados en un documento',
+  })
   @IsOptional()
   @IsString()
   unused?: string;

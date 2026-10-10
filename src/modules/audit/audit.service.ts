@@ -40,8 +40,12 @@ export class AuditService {
       username: e.username ?? user?.username ?? null,
       workshopId: user?.workshopId ?? null,
       ip: this.cls.isActive() ? (this.cls.get('ip') ?? null) : null,
-      userAgent: this.cls.isActive() ? (this.cls.get('userAgent')?.slice(0, 255) ?? null) : null,
-      path: this.cls.isActive() ? (this.cls.get('path')?.slice(0, 200) ?? null) : null,
+      userAgent: this.cls.isActive()
+        ? (this.cls.get('userAgent')?.slice(0, 255) ?? null)
+        : null,
+      path: this.cls.isActive()
+        ? (this.cls.get('path')?.slice(0, 200) ?? null)
+        : null,
     });
   }
 

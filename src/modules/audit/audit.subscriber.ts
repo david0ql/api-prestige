@@ -55,7 +55,11 @@ export class AuditSubscriber implements EntitySubscriberInterface {
     const type = this.name(event.metadata.target);
     if (SKIP.has(type) || !event.entity) return;
     const changed = event.updatedColumns.map((c) => c.propertyName);
-    if (changed.length === 0 || changed.every((c) => ['updatedAt', 'version'].includes(c))) return;
+    if (
+      changed.length === 0 ||
+      changed.every((c) => ['updatedAt', 'version'].includes(c))
+    )
+      return;
     const before: Record<string, unknown> = {};
     const after: Record<string, unknown> = {};
     for (const c of changed) {
@@ -65,7 +69,10 @@ export class AuditSubscriber implements EntitySubscriberInterface {
     const entry = this.audit.buildEntry({
       action: AuditAction.UPDATE,
       entityType: type,
-      entityId: (event.entity as { id?: string }).id ?? event.databaseEntity?.id ?? null,
+      entityId:
+        (event.entity as { id?: string }).id ??
+        event.databaseEntity?.id ??
+        null,
       before,
       after,
     });

@@ -11,7 +11,16 @@ import { SalesService } from './sales.service';
 
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([CustomerOperation, SaleDispatch, SaleDispatchLine, CustomerPayment, CustomerMaterialContribution, FinishedGood])],
+  imports: [
+    TypeOrmModule.forFeature([
+      CustomerOperation,
+      SaleDispatch,
+      SaleDispatchLine,
+      CustomerPayment,
+      CustomerMaterialContribution,
+      FinishedGood,
+    ]),
+  ],
   controllers: [SalesController],
   providers: [SalesService],
   exports: [SalesService],

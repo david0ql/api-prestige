@@ -23,7 +23,13 @@ export interface AppConfig {
     maxVideoMb: number;
     urlTtlSec: number;
   };
-  smtp: { host: string; port: number; user: string; password: string; from: string };
+  smtp: {
+    host: string;
+    port: number;
+    user: string;
+    password: string;
+    from: string;
+  };
   security: {
     swaggerEnabled: boolean;
     trustProxy: boolean;
@@ -77,18 +83,27 @@ export default (): AppConfig => {
       port: parseInt(process.env.SMTP_PORT ?? '1025', 10),
       user: process.env.SMTP_USER ?? '',
       password: process.env.SMTP_PASSWORD ?? '',
-      from: process.env.SMTP_FROM ?? 'Prestige Gold <no-reply@prestigegold.local>',
+      from:
+        process.env.SMTP_FROM ?? 'Prestige Gold <no-reply@prestigegold.local>',
     },
     security: {
-      swaggerEnabled: bool(process.env.SWAGGER_ENABLED, nodeEnv !== 'production'),
+      swaggerEnabled: bool(
+        process.env.SWAGGER_ENABLED,
+        nodeEnv !== 'production',
+      ),
       trustProxy: bool(process.env.TRUST_PROXY, false),
       maxFailedLogins: parseInt(process.env.MAX_FAILED_LOGINS ?? '5', 10),
       lockMinutes: parseInt(process.env.LOCK_MINUTES ?? '15', 10),
     },
     throttle: {
       ttlSec: parseInt(process.env.THROTTLE_TTL_SEC ?? '60', 10),
-      limit: parseInt(process.env.THROTTLE_LIMIT ?? (isTest ? '100000' : '300'), 10),
+      limit: parseInt(
+        process.env.THROTTLE_LIMIT ?? (isTest ? '100000' : '300'),
+        10,
+      ),
     },
-    seed: { adminPassword: process.env.SEED_ADMIN_PASSWORD ?? 'Prestige.2026!' },
+    seed: {
+      adminPassword: process.env.SEED_ADMIN_PASSWORD ?? 'Prestige.2026!',
+    },
   };
 };

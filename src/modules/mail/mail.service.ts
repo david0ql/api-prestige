@@ -26,12 +26,25 @@ export class MailService {
     });
   }
 
-  async send(to: string, subject: string, html: string, text: string): Promise<void> {
+  async send(
+    to: string,
+    subject: string,
+    html: string,
+    text: string,
+  ): Promise<void> {
     try {
-      await this.transporter.sendMail({ from: this.from, to, subject, html, text });
+      await this.transporter.sendMail({
+        from: this.from,
+        to,
+        subject,
+        html,
+        text,
+      });
     } catch (err) {
       // No se propaga: el flujo de recuperación nunca debe revelar si el correo existe.
-      this.logger.error(`No se pudo enviar correo a ${to}: ${(err as Error).message}`);
+      this.logger.error(
+        `No se pudo enviar correo a ${to}: ${(err as Error).message}`,
+      );
     }
   }
 }

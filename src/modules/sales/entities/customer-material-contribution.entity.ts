@@ -1,7 +1,14 @@
 import { Column, Entity, Index, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
-import { ContributionTiming, TransactionStatus } from '../../../common/enums/domain.enums';
-import { gramsColumn, moneyColumn, purityColumn } from '../../../common/utils/numeric';
+import {
+  ContributionTiming,
+  TransactionStatus,
+} from '../../../common/enums/domain.enums';
+import {
+  gramsColumn,
+  moneyColumn,
+  purityColumn,
+} from '../../../common/utils/numeric';
 import { Material } from '../../masters/entities/material.entity';
 
 /**
@@ -74,7 +81,11 @@ export class CustomerMaterialContribution extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   notes!: string | null;
 
-  @Column({ type: 'enum', enum: TransactionStatus, default: TransactionStatus.POSTED })
+  @Column({
+    type: 'enum',
+    enum: TransactionStatus,
+    default: TransactionStatus.POSTED,
+  })
   status!: TransactionStatus;
 
   @Column()

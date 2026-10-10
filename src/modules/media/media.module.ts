@@ -10,7 +10,14 @@ import { MediaStorageService } from './media-storage.service';
 
 @Global()
 @Module({
-  imports: [TypeOrmModule.forFeature([MediaFile, StoryShare, ProductionOrder, ProductionStage])],
+  imports: [
+    TypeOrmModule.forFeature([
+      MediaFile,
+      StoryShare,
+      ProductionOrder,
+      ProductionStage,
+    ]),
+  ],
   controllers: [MediaController],
   providers: [MediaService, MediaStorageService],
   exports: [MediaService, MediaStorageService],
