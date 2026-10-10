@@ -22,6 +22,7 @@ describe('Prestige Gold · cobertura auditada contra el documento (e2e)', () => 
     requiresVideo: boolean;
   }[] = [];
   let tcUserId = '';
+  const sold = { opLabel: '', customer: '', customerId: '', value: 0 };
   const closed: {
     id: string;
     number: string;
@@ -1161,6 +1162,28 @@ describe('Prestige Gold · cobertura auditada contra el documento (e2e)', () => 
       (c: { workshop: string }) => c.workshop === 'Colmenares',
     );
     expect(comp.onTime).toBeGreaterThanOrEqual(1);
+    // Tiempos y desviaciones por taller, recalculados desde el reporte de cumplimiento.
+    const compRep = (
+      await api.get(
+        'gerencia',
+        '/api/reports/compliance?from=2026-01-01&to=2026-12-31',
+      )
+    ).body;
+    const tcRows = compRep.rows.filter(
+      (r: { workshop: string; leadTimeDays: number | null }) =>
+        r.workshop === 'Colmenares' && r.leadTimeDays !== null,
+    );
+    const avg =
+      tcRows.reduce(
+        (a: number, r: { leadTimeDays: number }) => a + r.leadTimeDays,
+        0,
+      ) / tcRows.length;
+    expect(comp.avgLeadDays).toBeCloseTo(Math.round(avg * 10) / 10, 1);
+    expect(comp.onTime + comp.late).toBe(tcRows.length);
+    expect(comp.late).toBe(
+      tcRows.filter((r: { deviationDays: number }) => r.deviationDays > 0)
+        .length,
+    );
   });
 
   it('[RF-039b] alertas por consumo anormal frente al estándar', async () => {
@@ -1247,7 +1270,9 @@ describe('Prestige Gold · cobertura auditada contra el documento (e2e)', () => 
         '/api/alerts?type=PURITY_NON_CONFORMING&pageSize=100',
       )
     ).body.items;
-    expect(alerts.length).toBeGreaterThan(0);
+    expect(
+      alerts.find((a: { entityId: string }) => a.entityId === r.order.id),
+    ).toMatchObject({ entityType: 'ProductionOrder' });
     const goods = (
       await api.get('operaciones', '/api/finished-goods?pageSize=200')
     ).body.items;
@@ -1333,6 +1358,12 @@ describe('Prestige Gold · cobertura auditada contra el documento (e2e)', () => 
       await api.get('operaciones', '/api/sales?pageSize=100')
     ).body.items.find((x: { id: string }) => x.id === sale.body.id);
     expect(listed.responsibleId).toBe(me);
+    Object.assign(sold, {
+      opLabel: `${op.number} · ${op.description}`,
+      customer: customer.name,
+      customerId: customer.id,
+      value: 2500000,
+    });
   });
 
   it('[RNF-009b] el PDF de soporte se vuelve a descargar íntegro por URL firmada', async () => {
@@ -1392,10 +1423,35 @@ describe('Prestige Gold · cobertura auditada contra el documento (e2e)', () => 
         expect(r.grossProfit).toBeCloseTo(r.revenue - r.cogs, 2);
     }
     expect((await by('operation')).columns[0].label).toBe('Operación');
-    const cust = await by('customer');
-    expect(cust.rows.some((r: { group: string }) => r.group.length > 0)).toBe(
-      true,
+    // Una venta conocida ([RF-025b], 2.500.000) cae en el grupo correcto de operación, cliente y mes.
+    const opRow = (await by('operation')).rows.find(
+      (r: { group: string }) => r.group === sold.opLabel,
     );
+    expect(opRow.revenue).toBe(sold.value);
+    expect(opRow.units).toBe(1);
+    const allSales = (await api.get('operaciones', '/api/sales?pageSize=200'))
+      .body.items as {
+      customerId: string;
+      dispatchDate: string;
+      reversed: boolean;
+      lines: { value: number }[];
+    }[];
+    const live = allSales.filter(
+      (x) =>
+        !x.reversed &&
+        x.dispatchDate >= month.filters.from &&
+        x.dispatchDate <= month.filters.to,
+    );
+    const sum = (xs: typeof live) =>
+      xs.flatMap((x) => x.lines).reduce((a, l) => a + l.value, 0);
+    const cust = await by('customer');
+    expect(
+      cust.rows.find((r: { group: string }) => r.group === sold.customer)
+        .revenue,
+    ).toBe(sum(live.filter((x) => x.customerId === sold.customerId)));
+    expect(
+      month.rows.find((r: { group: string }) => r.group === '2026-10').revenue,
+    ).toBe(sum(live.filter((x) => x.dispatchDate.startsWith('2026-10'))));
     expect(month.summary).toEqual(
       expect.objectContaining({
         revenue: expect.any(Number),
@@ -1405,13 +1461,104 @@ describe('Prestige Gold · cobertura auditada contra el documento (e2e)', () => 
         consolidatedNet: expect.any(Number),
       }),
     );
+    // Utilidad consolidada recalculada desde ventas, costos aprobados y egresos operativos registrados.
+    const { from, to } = month.filters as { from: string; to: string };
+    const costs = (
+      await api.get(
+        'finanzas',
+        `/api/finance/costs?from=${from}&to=${to}&pageSize=200`,
+      )
+    ).body.items as { type: string; amount: number }[];
+    const material = costs
+      .filter((c) => c.type === 'MATERIAL')
+      .reduce((a, c) => a + c.amount, 0);
+    const labor = costs
+      .filter((c) => c.type === 'LABOR')
+      .reduce((a, c) => a + c.amount, 0);
+    const txs = (
+      await api.get(
+        'finanzas',
+        `/api/finance/transactions?type=EXPENSE&from=${from}&to=${to}&pageSize=200`,
+      )
+    ).body.items as {
+      amount: number;
+      status: string;
+      source: string;
+      category: { isOperatingExpense: boolean };
+    }[];
+    const opex = txs
+      .filter(
+        (t) =>
+          t.status === 'POSTED' &&
+          t.source !== 'REVERSAL' &&
+          t.category.isOperatingExpense,
+      )
+      .reduce((a, t) => a + t.amount, 0);
+    expect(month.summary.revenue).toBe(sum(live));
+    expect(month.summary.productionMaterialCost).toBeCloseTo(material, 2);
+    expect(month.summary.productionLaborCost).toBeCloseTo(labor, 2);
+    expect(month.summary.operatingExpenses).toBeCloseTo(opex, 2);
     expect(month.summary.consolidatedNet).toBeCloseTo(
-      month.summary.revenue -
-        month.summary.productionMaterialCost -
-        month.summary.productionLaborCost -
-        month.summary.operatingExpenses,
+      sum(live) - material - labor - opex,
       2,
     );
+  });
+
+  it('[RNF-011] el video se sirve por rangos (reproducción progresiva en celular) con metadatos y asociación a la orden', async () => {
+    const vid = (
+      await api.get(
+        'operaciones',
+        `/api/media?productionOrderId=${closed.id}&kind=VIDEO&pageSize=20`,
+      )
+    ).body.items[0];
+    expect(vid).toMatchObject({
+      kind: 'VIDEO',
+      mimeType: 'video/mp4',
+      productionOrderId: closed.id,
+    });
+    expect(vid.sha256).toMatch(/^[0-9a-f]{64}$/);
+    expect(vid.sizeBytes).toBeGreaterThan(0);
+    expect(vid.capturedAt).toBeTruthy();
+    const det = (await api.get('operaciones', `/api/media/${vid.id}`)).body;
+    const u = new URL(det.urls.original, 'http://x');
+    const full = await api.http
+      .get(u.pathname + u.search)
+      .buffer(true)
+      .parse((r, cb) => {
+        const c: Buffer[] = [];
+        r.on('data', (x: Buffer) => c.push(x));
+        r.on('end', () => cb(null, Buffer.concat(c)));
+      });
+    expect(full.status).toBe(200);
+    expect(full.headers['accept-ranges']).toBe('bytes');
+    const part = await api.http
+      .get(u.pathname + u.search)
+      .set('Range', 'bytes=0-15')
+      .buffer(true)
+      .parse((r, cb) => {
+        const c: Buffer[] = [];
+        r.on('data', (x: Buffer) => c.push(x));
+        r.on('end', () => cb(null, Buffer.concat(c)));
+      });
+    expect(part.status).toBe(206);
+    expect(part.headers['content-range']).toBe(
+      `bytes 0-15/${(full.body as Buffer).length}`,
+    );
+    expect(
+      Buffer.compare(
+        part.body as Buffer,
+        (full.body as Buffer).subarray(0, 16),
+      ),
+    ).toBe(0);
+    // La miniatura/versión web de una foto pesa menos que el original (carga liviana en móvil).
+    const photo = (
+      await api.get(
+        'operaciones',
+        `/api/media?productionOrderId=${closed.id}&kind=PHOTO&pageSize=20`,
+      )
+    ).body.items[0];
+    const pd = (await api.get('operaciones', `/api/media/${photo.id}`)).body;
+    expect(pd.urls.thumb).toBeTruthy();
   });
 
   it('[REP-15] cada reporte de la sección 15 entrega su contenido mínimo', async () => {
@@ -1493,7 +1640,30 @@ describe('Prestige Gold · cobertura auditada contra el documento (e2e)', () => 
       workshop: 'Colmenares',
       product: 'Anillo clásico 18K',
       targetGrams: 10,
+      commitmentDate: '2026-12-31',
+      overdue: false,
     });
+    const ordRow = ord.rows.find(
+      (r: { number: string }) => r.number === closed.number,
+    );
+    expect(ordRow.finishedGrams).toBeCloseTo(closed.finished, 4);
+    expect(ordRow.progressPct).toBeCloseTo(
+      Math.round((closed.finished / 10) * 1000) / 10,
+      1,
+    );
+    const discs = (
+      await api.get(
+        'operaciones',
+        `/api/discrepancies?orderId=${closed.id}&pageSize=100`,
+      )
+    ).body.items as { grams: number; status: string }[];
+    expect(ordRow.differencesGrams).toBeCloseTo(
+      discs
+        .filter((d) => d.status !== 'REJECTED')
+        .reduce((a, d) => a + d.grams, 0),
+      4,
+    );
+    expect(ordRow.differencesGrams).toBeGreaterThan(0);
 
     const cvs = await get('consumption-vs-standard');
     expect(
@@ -1582,9 +1752,17 @@ describe('Prestige Gold · cobertura auditada contra el documento (e2e)', () => 
       await api.get('operaciones', `/api/catalog/products/${P['ANI-CL'].id}`)
     ).body.currentSheet;
     const catRow = cat.rows.find((r: { code: string }) => r.code === 'ANI-CL');
+    const catDetail = (
+      await api.get('operaciones', `/api/catalog/products/${P['ANI-CL'].id}`)
+    ).body;
     expect(catRow).toMatchObject({
       version: sheet.versionNumber,
-      targetPurity: 750,
+      versions: catDetail.versions.length,
+      targetPurity: sheet.targetPurity,
+      standardWeight: sheet.standardWeight,
+      diameterMm: sheet.diameterMm,
+      measures: sheet.measures,
+      variables: JSON.stringify(sheet.variables),
     });
     expect(catRow.photos).toBeGreaterThanOrEqual(1);
 
