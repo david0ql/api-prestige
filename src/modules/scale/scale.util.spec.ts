@@ -8,6 +8,10 @@ describe('parseScaleReading (RF-002)', () => {
     ['US,NT,  12.5 kg', 12500, false],
     ['ST,GS,  5 ct', 1, true],
     ['  250,5 g', 250.5, true],
+    ['S S      100.00 g', 100, true],
+    ['S D      100.07 g', 100.07, false],
+    ['ST,GS,+   10.000 dwt', 15.5517384, true],
+    ['+  154.3236 gn', 10, true],
   ])('%s → %d g', (raw, grams, stable) => {
     const r = parseScaleReading(raw)!;
     expect(r.grams).toBeCloseTo(grams, 4);
