@@ -1063,6 +1063,7 @@ describe('Prestige Gold · cobertura auditada contra el documento (e2e)', () => 
         })
       ).body.value,
     ).toBe('Prestige Gold S.A.S.');
+    const originalScale = (await api.get('operaciones', '/api/weighings/config')).body;
     const scale = {
       baudRate: 2400,
       dataBits: 7,
@@ -1137,6 +1138,7 @@ describe('Prestige Gold · cobertura auditada contra el documento (e2e)', () => 
     await api.put('admin', '/api/parameters/company.name', {
       value: 'Prestige Gold',
     });
+    await api.put('admin', '/api/parameters/scale.config', { value: originalScale });
   });
 
   it('[RF-031] [CA-010] productividad mensual por taller con gramos, unidades y órdenes cumplidas', async () => {
@@ -1559,6 +1561,54 @@ describe('Prestige Gold · cobertura auditada contra el documento (e2e)', () => 
     ).body.items[0];
     const pd = (await api.get('operaciones', `/api/media/${photo.id}`)).body;
     expect(pd.urls.thumb).toBeTruthy();
+  });
+
+  it('[RF-002] [SUP-18] balanza Mettler Toledo MT-SICS: acepta «S S», rechaza movimiento, sobrecarga y errores', async () => {
+    const cfg = (await api.get('operaciones', '/api/weighings/config')).body;
+    expect(cfg).toMatchObject({
+      protocol: 'MT-SICS',
+      baudRate: 9600,
+      dataBits: 8,
+      stopBits: 1,
+      parity: 'none',
+    });
+    const send = (rawReading: string, grossGrams = 12.3456) =>
+      api.post('operaciones', '/api/weighings', {
+        purpose: 'ENTRY',
+        source: 'SCALE',
+        grossGrams,
+        rawReading,
+        deviceInfo: 'Mettler Toledo · Web Serial',
+      });
+    const ok = await send('S S      12.3456 g');
+    expect(ok.status).toBe(201);
+    expect(ok.body).toMatchObject({
+      source: 'SCALE',
+      grossGrams: 12.3456,
+      stable: true,
+      rawReading: 'S S      12.3456 g',
+    });
+    expect((await send('S D      12.3456 g')).body.error).toBe(
+      'SCALE_UNSTABLE',
+    );
+    expect((await send('S S      12.3456 g', 13)).body.error).toBe(
+      'SCALE_READING_MISMATCH',
+    );
+    for (const [raw, status] of [
+      ['S +', 'OVERLOAD'],
+      ['S -', 'UNDERLOAD'],
+      ['S I', 'BUSY'],
+      ['ES', 'SYNTAX'],
+      ['ET', 'TRANSMISSION'],
+      ['EL', 'LOGICAL'],
+    ]) {
+      const r = await send(raw);
+      expect(r.status).toBe(422);
+      expect(r.body).toMatchObject({
+        error: 'SCALE_ERROR',
+        details: { status },
+      });
+    }
   });
 
   it('[REP-15] cada reporte de la sección 15 entrega su contenido mínimo', async () => {

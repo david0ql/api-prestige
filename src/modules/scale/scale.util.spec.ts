@@ -1,4 +1,4 @@
-import { parseScaleReading } from './scale.util';
+import { mtSicsError, parseScaleReading } from './scale.util';
 
 describe('parseScaleReading (RF-002)', () => {
   it.each([
@@ -20,5 +20,31 @@ describe('parseScaleReading (RF-002)', () => {
 
   it('devuelve null si no hay número', () => {
     expect(parseScaleReading('ERROR')).toBeNull();
+  });
+});
+
+describe('Mettler Toledo MT-SICS (balanza de la Oficina Madre)', () => {
+  it.each([
+    ['S S      12.3456 g', 12.3456, true],
+    ['S D      12.3400 g', 12.34, false],
+    ['S S       1.2345 kg', 1234.5, true],
+    ['S S       5.0000 ct', 1, true],
+  ])('%s → %d g', (raw, grams, stable) => {
+    const r = parseScaleReading(raw)!;
+    expect(r.grams).toBeCloseTo(grams, 4);
+    expect(r.stable).toBe(stable);
+    expect(mtSicsError(raw)).toBeNull();
+  });
+
+  it.each([
+    ['S +', 'OVERLOAD'],
+    ['S -', 'UNDERLOAD'],
+    ['S I', 'BUSY'],
+    ['ES', 'SYNTAX'],
+    ['ET', 'TRANSMISSION'],
+    ['EL', 'LOGICAL'],
+  ])('%s → estado %s sin peso', (raw, status) => {
+    expect(mtSicsError(raw)).toBe(status);
+    expect(parseScaleReading(raw)).toBeNull();
   });
 });

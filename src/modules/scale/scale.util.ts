@@ -30,3 +30,26 @@ export function parseScaleReading(
   const stable = !/(^|[,\s])US([,\s]|$)|^S\s+D\s|\?/i.test(text);
   return { grams, stable };
 }
+
+/** Respuestas de estado/error del protocolo Mettler Toledo MT-SICS (sin peso utilizable). */
+export const MT_SICS_ERRORS: Record<string, string> = {
+  OVERLOAD: 'Balanza en sobrecarga (S +): retire peso',
+  UNDERLOAD: 'Balanza bajo el rango (S -): verifique el plato y haga cero',
+  BUSY: 'Balanza ocupada (S I): espere y vuelva a leer',
+  SYNTAX: 'La balanza no reconoció el comando (ES)',
+  TRANSMISSION:
+    'Error de transmisión con la balanza (ET): revise cable y baudios',
+  LOGICAL: 'La balanza no puede ejecutar el comando (EL)',
+};
+
+/** Clasifica una respuesta MT-SICS de estado/error; null si la trama trae un peso. */
+export function mtSicsError(raw: string): keyof typeof MT_SICS_ERRORS | null {
+  const t = raw.trim().toUpperCase();
+  if (/^S\s+\+$/.test(t)) return 'OVERLOAD';
+  if (/^S\s+-$/.test(t)) return 'UNDERLOAD';
+  if (/^S\s+I$/.test(t)) return 'BUSY';
+  if (t === 'ES') return 'SYNTAX';
+  if (t === 'ET') return 'TRANSMISSION';
+  if (t === 'EL') return 'LOGICAL';
+  return null;
+}

@@ -35,7 +35,7 @@ import {
 } from './dto/scale.dto';
 import { WeighingAdjustment } from './entities/weighing-adjustment.entity';
 import { Weighing } from './entities/weighing.entity';
-import { parseScaleReading } from './scale.util';
+import { MT_SICS_ERRORS, mtSicsError, parseScaleReading } from './scale.util';
 
 /** Balanza Madre (RF-002, RF-003, RN-019). */
 @Injectable()
@@ -70,6 +70,15 @@ export class ScaleService {
       }
     } else {
       // RN-019: el peso enviado debe coincidir con la trama cruda de la balanza.
+      const sicsError = mtSicsError(dto.rawReading ?? '');
+      if (sicsError)
+        throw new BusinessRuleException(
+          'SCALE_ERROR',
+          MT_SICS_ERRORS[sicsError],
+          {
+            status: sicsError,
+          },
+        );
       const parsed = parseScaleReading(dto.rawReading ?? '');
       if (!parsed)
         throw new BusinessRuleException(
