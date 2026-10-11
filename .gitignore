@@ -6,3 +6,6 @@ storage-test
 .env
 *.log
 storage-e2e
+.env.production
+.env.*.local
+.DS_Store

@@ -1,0 +1,780 @@
+PRESTIGE GOLD
+Sistema Integral de Control de Materiales, Talleres, Producción y Finanzas
+ESPECIFICACIÓN FUNCIONAL PARA APROBACIÓN DEL CLIENTE
+
+Versión 1.1  |  Fecha: 06 de octubre de 2026 Estado: Borrador para aprobación funcional
+
+Control del documento
+Campo
+Detalle
+Documento
+Especificación Funcional – Sistema Prestige Gold
+Objetivo
+Definir el alcance funcional de la primera fase para aprobación del cliente antes de diseño detallado y desarrollo.
+Versión
+1.1
+Fecha
+06-Oct-2026
+Estado
+Para aprobación del cliente – observaciones incorporadas
+Fuente
+Levantamiento consolidado a partir de mensajes y audios suministrados por el cliente.
+Principio rector
+La Oficina Madre Prestige Gold mantiene el control de materiales, talleres, producción, clientes, dinero y trazabilidad.
+Ajustes versión 1.1
+Se incorporan evidencias obligatorias en foto/video por proceso, mosaico visual de fabricación, catálogo técnico por modelo, verificación de ley/pureza del producto terminado y abonos de clientes en dinero o material.
+
+Criterio de aprobación: La aprobación de este documento confirma que el proceso, alcance, reglas y pantallas conceptuales representan correctamente la operación deseada. Los detalles técnicos, integraciones específicas, valores de mano de obra y parametrizaciones finales se definirán posteriormente.
+
+1. Resumen ejecutivo
+Prestige Gold requiere un sistema nuevo para centralizar y controlar una operación de fabricación de joyería distribuida entre una oficina principal y varios talleres externos. La Oficina Madre será el punto único de entrada, pesaje, distribución, recepción, validación, venta y control financiero. El sistema debe garantizar trazabilidad por gramos desde que un material entra hasta que se transforma en producto terminado, se recibe nuevamente en oficina y posteriormente se despacha o vende al cliente.
+La solución propuesta será una aplicación web/móvil con acceso diferenciado para la Oficina Madre y cada taller. La balanza de la Oficina Madre debe integrarse al proceso de registro para capturar el peso real de los materiales. Cada entrega a un taller debe convertirse en una custodia identificable; cada taller registrará consumos, avances, fotografías y videos obligatorios del proceso, producto terminado y, posteriormente, mano de obra. Estas evidencias deberán permitir reconstruir visualmente la elaboración de cada prenda y conformar un mosaico/historial que pueda ser aprovechado posteriormente para mostrar al consumidor final el proceso detrás de la pieza. Prestige Gold revisará y aprobará la información antes de que genere efectos contables.
+El objetivo del sistema no es únicamente llevar inventario: debe funcionar como un centro de control operativo y financiero que permita saber, en cualquier momento, cuánto material existe, quién lo tiene, para qué producción fue asignado, qué se consumió, qué regresó, qué merma existe, cuánto cuesta cada proceso, cuánto se vendió y cuál es la rentabilidad real de la operación.
+2. Objetivos del sistema
+Controlar el 100% de las entradas y salidas de materiales por peso y tipo de material.
+Mantener una trazabilidad de extremo a extremo desde la Oficina Madre hasta cada taller y desde el taller de regreso a Prestige Gold.
+Conocer en tiempo real el inventario global y el inventario en custodia por taller.
+Planificar y controlar órdenes de producción por producto, taller, material, gramos y fecha compromiso.
+Evitar entregas de material insuficientes mediante estándares de consumo y alertas preventivas.
+Permitir a cada taller confirmar digitalmente los materiales recibidos y registrar su operación.
+Controlar recepción de producto terminado, diferencias, sobrantes, devoluciones y mermas.
+Consolidar ingresos, egresos, abonos de clientes, materiales aportados por clientes, costos y utilidades.
+Medir productividad, cumplimiento y rendimiento por taller, producto y período.
+Crear una base escalable para incorporar nuevos talleres, productos, materiales y reglas sin rediseñar el sistema.
+3. Alcance de la primera fase
+Incluido en Fase 1
+Descripción
+Maestros y parametrización
+Materiales, talleres, productos, clientes, unidades, estándares de consumo y relaciones producto–taller.
+Balanza Madre
+Registro de pesajes de entrada y salida, captura del peso e identificación del movimiento.
+Inventarios
+Existencia en Oficina Madre, inventario en custodia por taller y movimientos entre ubicaciones.
+Órdenes de producción
+Creación, asignación, entrega de materiales, compromisos, estados y seguimiento.
+Portal de talleres
+Confirmación de recepción, consumos, avances, fotografías y videos obligatorios por etapas, producto terminado, solicitudes y observaciones.
+Recepción de producción
+Pesaje, verificación de ley/pureza del producto terminado, validación de calidad, diferencias, sobrantes, devoluciones y cierre de orden.
+Clientes y despachos
+Registro de salidas a clientes con control de calidad/ley del producto, abonos monetarios y abonos/aportes de material del cliente antes o después de la fabricación.
+Contabilidad operativa
+Ingresos, egresos, costos de materiales, costos aprobados de mano de obra, ventas, abonos y utilidad.
+Indicadores
+Inventarios, productividad por taller, cumplimiento, mermas, costos y rentabilidad.
+Auditoría y seguridad
+Usuarios, roles, permisos, firma/aceptación digital y bitácora de movimientos.
+Catálogo técnico y trazabilidad visual
+Ficha técnica por modelo con fotos, peso, diámetro, medidas y variables configurables; historial visual/mosaico del proceso de fabricación por prenda.
+
+3.1 Elementos reservados para definición posterior
+Tarifas definitivas de mano de obra por taller/producto/gramo.
+Fórmulas metalúrgicas definitivas de aleaciones y transformaciones entre quilatajes.
+Integración contable/fiscal externa si se requiere software contable de terceros.
+Proceso detallado de logística de entrega al cliente final.
+Políticas de facturación fiscal, impuestos y documentos legales por país.
+Automatizaciones avanzadas de compras, planeación de demanda o inteligencia artificial.
+4. Modelo operacional
+4.1 Oficina Madre – Prestige Gold
+Prestige Gold será el centro de operaciones y el propietario de la trazabilidad. Todo material que ingrese debe registrarse y pesarse antes de ser distribuido. Desde este punto se generan las asignaciones a talleres y se reciben los productos terminados. La Oficina Madre conserva el control lógico del material aunque físicamente esté en poder de un taller.
+4.2 Talleres / proveedores
+Código sugerido
+Taller
+Producción principal
+Materiales/insumos relevantes
+TC
+Colmenares
+Familia Gucci y anillería
+Oro 24K, hilo y demás insumos parametrizados.
+TJ
+Jasmine
+Pulseras, tobilleras, dijes, herrajes y piezas con piedra
+Cadena tipo italiana, piedras, soldadura, material 18K y otros definidos.
+TJV
+Javier
+Fabricación/preparación de hilo y aleaciones
+Oro 24K, liga para 10K, liga/soldadura y materiales definidos por fórmula.
+TCA
+Camilo
+Balinera, balines diamantados y productos Gucci
+Oro 24K, plata, cobre, bronce y otros materiales parametrizados.
+Configurable
+Nuevos talleres
+Cualquier familia de producto
+El sistema debe permitir agregar talleres, productos e insumos sin depender de los cuatro iniciales.
+
+Normalización de nombres: En los mensajes existe variación entre nombres y abreviaturas. Para efectos del sistema, los códigos de taller deberán ser configurables y no quedar “quemados” en el software.
+
+5. Catálogos y datos maestros
+Maestro
+Datos mínimos
+Regla principal
+Materiales
+Código, nombre, categoría, pureza/quilataje, unidad base, estado, costo de referencia.
+La unidad operativa principal será el gramo, aunque podrán existir unidades auxiliares.
+Productos
+Código, familia, variante/modelo, fotos, peso estándar, diámetro, medidas, ley/pureza objetivo, taller(es) habilitado(s), insumos estándar y variables técnicas configurables.
+Cada modelo debe poder evolucionar hacia un estándar técnico reutilizable para producción, calidad y catálogo comercial.
+Talleres
+Código, nombre, responsable, contacto, estado, productos autorizados, condiciones.
+Cada taller verá únicamente su información.
+Clientes
+Identificación, datos básicos, saldo monetario, abonos en efectivo/medios definidos, saldo/material aportado, tipo/pureza/peso del material y trazabilidad por operación.
+Debe diferenciarse abono en dinero de abono/aporte en material, incluyendo materiales entregados antes o después de la fabricación.
+Fórmulas/estándares
+Producto, material/insumo, cantidad por gramo o lote, tolerancia.
+Se usarán para validar suficiencia de materiales y controlar consumos.
+Ubicaciones
+Oficina Madre, taller, tránsito, cliente u otra ubicación.
+Todo inventario debe pertenecer a una ubicación lógica.
+Usuarios/Roles
+Usuario, rol, taller asociado, permisos, estado.
+Acceso por mínimo privilegio y segregación de funciones.
+
+6. Proceso general punta a punta
+Paso
+Etapa
+Resultado
+1
+Ingreso de materiales
+Se recibe material en Prestige Gold, se identifica origen, tipo y documento/operación asociada.
+2
+Pesaje en Balanza Madre
+Se captura el peso real y se registra en el sistema. El peso queda ligado al movimiento y al responsable.
+3
+Disponibilidad de inventario
+El material pasa a inventario disponible de Oficina Madre, clasificado por tipo, pureza y lote cuando aplique.
+4
+Planeación / orden de producción
+Prestige Gold define qué fabricar, cuántos gramos/unidades, taller responsable y fecha compromiso.
+5
+Validación de suficiencia
+El sistema calcula materiales requeridos según estándares y advierte faltantes antes del despacho.
+6
+Entrega al taller
+Se pesan los materiales que salen, se registra la custodia y el taller confirma recepción/compromiso.
+7
+Ejecución de taller
+El taller registra consumos, avances y evidencias obligatorias en fotografías y videos por etapas. Las evidencias construyen el historial/mosaico de elaboración de la prenda y se asocian permanentemente a la orden/modelo.
+8
+Retorno, control de calidad y ley
+El producto terminado, sobrantes y devoluciones regresan a Oficina Madre, se pesan nuevamente y se verifica la ley/pureza del producto terminado contra el estándar definido (p. ej., oro fino 999 como referencia de 24K), además de los controles de calidad aplicables.
+9
+Conciliación
+El sistema compara entregado vs. consumido + terminado + sobrante + merma/diferencia.
+10
+Aprobación
+Prestige Gold valida producción, diferencias y costos; solo después se cierra la orden.
+11
+Inventario terminado / venta
+El producto aprobado queda disponible para despacho/venta. Antes de la salida se valida el control de calidad y la ley/pureza registrada. La operación del cliente puede recibir abonos en dinero o en material, conservando su trazabilidad.
+12
+Contabilidad y análisis
+Los movimientos autorizados alimentan costos, ingresos, egresos, saldos, utilidad y reportes.
+
+7. Estados propuestos
+7.1 Orden de producción
+Estado
+Significado
+Borrador
+Orden creada pero aún editable y sin compromiso.
+Pendiente de materiales
+Existe la necesidad de producción pero faltan insumos.
+Lista para despacho
+Material completo y validado.
+Despachada
+Material entregado físicamente al taller.
+Aceptada por taller
+Taller confirmó recepción y compromiso.
+En producción
+Existe trabajo reportado por el taller.
+Parcial
+Se ha recibido una parte de la producción.
+Terminada por taller
+Taller declara finalizado el trabajo.
+En revisión Prestige Gold
+Producto y consumos pendientes de validación de Oficina Madre.
+Aprobada/Cerrada
+Producción conciliada y costos autorizados.
+Rechazada/Ajuste
+Existen diferencias o evidencias que deben corregirse.
+Cancelada
+Orden cancelada con reversión/control de materiales según corresponda.
+
+8. Requerimientos funcionales
+ID
+Requerimiento
+Descripción
+Prioridad
+RF-001
+Registrar entrada de materiales
+El sistema permitirá registrar todo material que ingrese a Prestige Gold, identificando tipo, pureza, origen, fecha, responsable y peso.
+Alta
+RF-002
+Integrar Balanza Madre
+La pantalla de pesaje deberá obtener el peso desde una balanza conectada a PC/tablet cuando el dispositivo/protocolo lo permita.
+Alta
+RF-003
+Captura manual controlada
+Si la balanza no está disponible, un rol autorizado podrá registrar peso manual indicando motivo; el evento quedará auditado.
+Alta
+RF-004
+Asignar material a destino
+Desde el pesaje o inventario se podrá asociar el material a Oficina Madre, taller, orden, cliente u operación.
+Alta
+RF-005
+Inventario global por gramos
+El sistema calculará existencias por material y ubicación con base en movimientos confirmados.
+Alta
+RF-006
+Inventario en custodia por taller
+Prestige Gold podrá consultar exactamente cuánto material posee cada taller.
+Alta
+RF-007
+Crear orden de producción
+Se podrá definir producto, variante, taller, cantidad/peso objetivo, fecha de entrega y observaciones.
+Alta
+RF-008
+Calcular insumos requeridos
+A partir de estándares, el sistema estimará insumos necesarios para la producción solicitada.
+Alta
+RF-009
+Alerta de insuficiencia
+Antes de despachar, el sistema advertirá cuando el material entregado no alcance para el objetivo planificado.
+Alta
+RF-010
+Despachar materiales al taller
+Registrar salida por peso, responsable, orden y destino.
+Alta
+RF-011
+Confirmación digital de recepción
+El taller confirmará material y peso recibido, aceptará el compromiso y quedará evidencia de fecha/usuario.
+Alta
+RF-012
+Registrar consumo de insumos
+Cada taller podrá informar cantidades consumidas por material/insumo durante la producción.
+Alta
+RF-013
+Registrar avance
+El taller podrá reportar avance parcial por gramos/unidades y observaciones.
+Media
+RF-014
+Registrar evidencia fotográfica y en video
+El taller deberá subir fotografías y videos obligatorios asociados a las distintas etapas de elaboración, avance y producto terminado. Cada evidencia quedará ligada a la orden, producto/modelo, taller, fecha y etapa del proceso.
+Alta
+RF-015
+Solicitar material adicional
+El taller podrá solicitar insumos adicionales indicando material, cantidad y motivo.
+Alta
+RF-016
+Validar solicitud contra estándar
+El sistema comparará la solicitud con el consumo esperado y alertará desviaciones.
+Media
+RF-017
+Registrar producto terminado
+El taller declarará producto final por producto/modelo, gramos/unidades, fecha y evidencias finales en fotografía/video; deberá registrar las variables técnicas requeridas para alimentar el estándar del modelo.
+Alta
+RF-018
+Registrar mano de obra
+Se dispondrá de campos para tarifa, base (gramos/unidades/lote) y valor calculado, aunque los valores definitivos se parametrizarán después.
+Media
+RF-019
+Recepcionar y verificar producto terminado
+Prestige Gold pesará y recibirá el producto devuelto por el taller, lo relacionará con la orden y ejecutará la validación de ley/pureza y calidad antes de aceptarlo como producto terminado.
+Alta
+RF-020
+Registrar sobrantes y devoluciones
+La recepción deberá separar producto terminado, material sobrante, material no utilizado y devolución.
+Alta
+RF-021
+Conciliar materiales
+El sistema comparará material entregado contra consumos, retornos, producto terminado y diferencias/mermas.
+Alta
+RF-022
+Gestionar mermas/diferencias
+Toda diferencia deberá tener tipo, cantidad, motivo, responsable y aprobación.
+Alta
+RF-023
+Aprobar producción
+Solo Prestige Gold podrá aprobar el resultado final y cerrar la orden.
+Alta
+RF-024
+Enviar costo aprobado a contabilidad
+Los costos de taller no impactarán finanzas hasta aprobación.
+Alta
+RF-025
+Registrar ventas/despachos con control de calidad
+Registrar salida de producto al cliente, cantidades, valor y responsable. Antes de confirmar el despacho se deberá validar que el producto tenga control de calidad y ley/pureza verificados y aprobados.
+Alta
+RF-026
+Registrar abonos monetarios
+Registrar abonos de clientes y aplicarlos a saldos/operaciones.
+Alta
+RF-027
+Registrar abonos/aportes de material del cliente
+Registrar materiales entregados o abonados por clientes, antes o después de la fabricación, identificando material, ley/pureza, peso, fecha, operación relacionada y origen. El material deberá pesarse y conservar trazabilidad separada del abono monetario.
+Alta
+RF-028
+Registrar ingresos y egresos
+El módulo financiero registrará entradas/salidas de dinero con concepto, tercero, medio y soporte.
+Alta
+RF-029
+Calcular costos y utilidad
+El sistema consolidará costo de material, mano de obra aprobada, otros costos, venta y utilidad.
+Alta
+RF-030
+Rentabilidad por producto/taller
+Generar indicadores de rentabilidad por período, producto, taller y operación.
+Media
+RF-031
+Productividad por taller
+Medir gramos/unidades producidas, órdenes cumplidas, tiempos, desviaciones y entregas.
+Alta
+RF-032
+Control de compromisos
+Comparar fecha comprometida versus fecha real de entrega.
+Alta
+RF-033
+Panel Oficina Madre
+Mostrar inventario, material en talleres, producción en curso, pendientes, alertas, ventas, costos y utilidad.
+Alta
+RF-034
+Panel de taller
+Mostrar al taller únicamente materiales recibidos, órdenes, inventario, tareas, solicitudes y entregas propias.
+Alta
+RF-035
+Firma/aceptación digital
+Registrar aceptación de entregas y compromisos por usuario, fecha y evidencia.
+Alta
+RF-036
+Auditoría
+Mantener bitácora de creación, edición, aprobación, reverso y acceso a movimientos críticos.
+Alta
+RF-037
+Administrar nuevos talleres
+Crear nuevos talleres y sus permisos sin desarrollo adicional.
+Alta
+RF-038
+Administrar nuevos materiales/productos
+Crear nuevos materiales, productos, variantes y estándares sin modificar código.
+Alta
+RF-039
+Alertas operativas
+Generar alertas por faltantes, retrasos, consumos anormales, diferencias y mínimos de inventario.
+Alta
+RF-040
+Exportar reportes
+Permitir exportar reportes operativos y financieros a formatos de oficina.
+Media
+RF-041
+Construir mosaico/historial visual de fabricación
+El sistema organizará cronológicamente las fotografías y videos cargados durante la fabricación para conformar un mosaico o historia visual de cada prenda/orden. El contenido deberá poder consultarse y quedar preparado para uso posterior en experiencia de cliente/consumidor final.
+Alta
+RF-042
+Catálogo técnico por modelo
+El sistema permitirá construir y mantener una ficha técnica por cada modelo con fotografías, peso de referencia, diámetro, largo/medidas y demás variables configurables necesarias para establecer un estándar de fabricación y calidad.
+Alta
+RF-043
+Controlar ley/pureza objetivo
+Cada material y producto/modelo podrá tener una ley/pureza objetivo y tolerancia parametrizada. Para oro, el sistema podrá manejar la referencia de oro fino 999 como equivalente operativo de 24K, además de otras leyes/quilatajes definidas por Prestige Gold.
+Alta
+RF-044
+Verificar ley del producto terminado
+En la recepción del producto terminado, Prestige Gold deberá registrar el resultado de la verificación de ley/pureza, método/soporte cuando aplique, responsable, fecha, valor obtenido y conformidad frente al estándar antes de aprobar la orden.
+Alta
+RF-045
+Trazar abonos mixtos de clientes
+Una operación de cliente podrá registrar abonos en dinero y/o material. El sistema deberá mantener separados ambos saldos, valoraciones y movimientos, permitiendo relacionar aportes de material posteriores a la fabricación con la cuenta/operación correspondiente.
+Alta
+
+9. Reglas de negocio
+ID
+Regla
+RN-001
+Todo movimiento físico de material debe tener un movimiento equivalente en el sistema.
+RN-002
+El gramo será la unidad base de control de materiales y producción, sin impedir unidades auxiliares.
+RN-003
+No se permitirá despachar más cantidad de la disponible en la ubicación origen, salvo autorización excepcional auditada.
+RN-004
+Un material despachado a un taller cambia de ubicación lógica a “custodia del taller”; no desaparece del inventario global de Prestige Gold.
+RN-005
+Toda entrega debe relacionarse con un taller, responsable y motivo; cuando aplique, con una orden de producción.
+RN-006
+Toda orden debe tener producto, taller, cantidad/peso objetivo, materiales requeridos y compromiso de entrega.
+RN-007
+Los estándares de consumo deben ser parametrizables por producto/variante.
+RN-008
+Si los materiales asignados son insuficientes para la producción estándar, el sistema debe alertar antes del inicio/despacho.
+RN-009
+El taller no podrá aprobar su propia producción ni autorizar sus costos contables.
+RN-010
+Toda diferencia de peso debe registrarse y justificarse antes de cerrar una orden.
+RN-011
+El cierre de una orden exige conciliación: entregado = consumido + retornado/sobrante + producto/transformación equivalente + diferencia autorizada, de acuerdo con la fórmula aplicable.
+RN-012
+Los costos de mano de obra reportados por taller serán propuestos y requerirán aprobación de Prestige Gold.
+RN-013
+Las fotografías y videos de proceso serán evidencia obligatoria por las etapas definidas y quedarán asociados de forma permanente a la orden/modelo para conformar su historial visual.
+RN-014
+Un taller solo podrá consultar y modificar operaciones que le hayan sido asignadas.
+RN-015
+Los movimientos aprobados no se eliminan; se corrigen mediante reversos/ajustes auditables.
+RN-016
+Los abonos de clientes en dinero y en material deben registrarse en tipos de movimiento independientes, aunque puedan pertenecer a la misma venta/operación.
+RN-017
+Los materiales aportados por clientes deberán conservar origen, tipo, ley/pureza, peso y operación relacionada, incluso cuando el aporte se reciba con posterioridad a la fabricación.
+RN-018
+Prestige Gold podrá crear cualquier nuevo taller sin modificar la estructura del sistema.
+RN-019
+La integración con la balanza no debe permitir alterar el peso capturado sin que quede trazabilidad del ajuste.
+RN-020
+Toda transacción financiera deberá tener fecha, concepto, valor, responsable y soporte/referencia cuando aplique.
+RN-021
+La recepción de producto terminado no podrá aprobarse sin registrar el resultado del control de ley/pureza cuando el producto tenga dicho control configurado.
+RN-022
+El despacho al cliente requerirá que la pieza esté liberada por control de calidad y, cuando aplique, por control de ley/pureza.
+RN-023
+Cada modelo deberá conservar una ficha técnica versionada; cambios en peso, diámetro, medidas, ley u otras variables no deben sobrescribir el histórico de órdenes ya cerradas.
+RN-024
+Las evidencias visuales asociadas a una orden cerrada no podrán eliminarse por usuarios de taller; cualquier ocultamiento o corrección requerirá trazabilidad administrativa.
+
+10. Validaciones críticas
+Peso mayor que cero en entradas, salidas y recepciones físicas.
+Material activo y válido para la operación seleccionada.
+Taller habilitado para el producto asignado.
+Inventario suficiente en Oficina Madre antes del despacho.
+Comparación material requerido vs. material entregado.
+Bloqueo o advertencia cuando la cantidad terminada supera valores plausibles según entradas y fórmula.
+Diferencias de peso por fuera de tolerancia deben requerir justificación/aprobación.
+No cerrar orden con movimientos pendientes, recepción incompleta o conciliación sin resolver.
+No contabilizar mano de obra o costos de taller sin aprobación de la Oficina Madre.
+No permitir que usuarios de taller consulten información financiera global o de otros talleres.
+No permitir completar una etapa de producción marcada como obligatoria sin la evidencia visual requerida (foto y/o video).
+No aprobar recepción de producto terminado sin verificación de ley/pureza cuando el producto la requiera.
+No despachar al cliente un producto sin estado de calidad aprobado y ley/pureza validada cuando aplique.
+Validar que los abonos en material del cliente tengan peso, tipo de material, ley/pureza, origen y operación asociada.
+11. Roles y permisos
+Rol
+Responsabilidad
+Permisos principales
+Administrador Prestige Gold
+Configuración y administración general.
+Maestros, usuarios, permisos, parametrización, auditoría y reversos autorizados.
+Operaciones Oficina Madre
+Pesaje, inventario, asignaciones, recepción y producción.
+Crear movimientos, órdenes, entregar/recibir, conciliar.
+Finanzas/Contabilidad
+Control monetario y rentabilidad.
+Ingresos, egresos, abonos, costos, cierres y reportes financieros.
+Aprobador/Gerencia
+Control y autorización.
+Aprobar diferencias, costos, cierres, consultar todos los indicadores.
+Taller
+Ejecución de producción.
+Ver solo sus órdenes/materiales; confirmar recepción; registrar consumo, avance, fotos, producto y solicitudes.
+Consulta/Auditor
+Revisión.
+Solo lectura de módulos autorizados y auditoría.
+
+12. Diseño funcional de pantallas
+ID
+Pantalla
+Objetivo
+P01
+Inicio de sesión
+Acceso seguro para Oficina Madre y talleres; recuperación de acceso; identificación del rol.
+P02
+Dashboard Oficina Madre
+KPIs de inventario total, material en talleres, producción en proceso, retrasos, alertas, ventas, costos y utilidad.
+P03
+Entrada / Balanza Madre
+Seleccionar material, origen, operación; mostrar balanza conectada, peso en vivo, capturar/confirmar y guardar.
+P04
+Inventario global
+Existencias por material, pureza, lote, ubicación y estado; movimientos y trazabilidad.
+P05
+Asignación a taller
+Seleccionar taller, orden, material y gramos; validar disponibilidad/suficiencia y generar entrega.
+P06
+Orden de producción
+Producto, variante, objetivo, taller, materiales, estándares, fechas, adjuntos, estados y seguimiento.
+P07
+Portal / Dashboard de taller
+Órdenes asignadas, materiales en custodia, compromisos, alertas y tareas.
+P08
+Confirmación de entrega
+Detalle recibido, peso, fecha, aceptación/observación y firma/confirmación digital.
+P09
+Registro de producción y evidencias
+Avance, gramos/unidades, consumos, fotografías y videos obligatorios por etapa, observaciones y solicitud de materiales; línea de tiempo/mosaico de elaboración.
+P10
+Producto terminado / ficha técnica
+Detalle final, peso, fotos/videos, diámetro, medidas y variables del modelo, sobrantes, devolución y mano de obra propuesta; alimentación del catálogo técnico.
+P11
+Recepción y control de calidad/ley
+Pesaje de retorno, verificación de ley/pureza, controles de calidad, comparación contra taller, diferencias, evidencias y recepción parcial/final.
+P12
+Conciliación de orden
+Vista entregado/consumido/devuelto/terminado/diferencia; aprobación o devolución a ajuste.
+P13
+Clientes y abonos
+Saldos, ventas, abonos monetarios, materiales aportados/abonados por el cliente antes o después de fabricación, ley/pureza, peso y trazabilidad.
+P14
+Caja / Finanzas
+Ingresos, egresos, costos, pagos a talleres, movimientos y soportes.
+P15
+Productividad de talleres
+Producción por período, cumplimiento, retrasos, mermas y desempeño comparativo.
+P16
+Rentabilidad
+Ventas, costo material, mano de obra, gastos, utilidad bruta/neta por producto/taller/mes.
+P17
+Alertas
+Faltantes, mínimos, retrasos, diferencias, consumos fuera de estándar y operaciones pendientes.
+P18
+Administración
+Talleres, materiales, productos, estándares, usuarios, roles y parámetros.
+P19
+Catálogo técnico de modelos
+Consulta y mantenimiento de fichas por modelo: fotografías, peso estándar, diámetro, medidas, ley/pureza objetivo, variables técnicas, versiones y productos asociados.
+P20
+Historia visual / mosaico de fabricación
+Línea de tiempo de fotos y videos por orden/prenda, organizada por etapas, lista para consulta interna y futura presentación al consumidor final.
+
+13. Mockup conceptual
+La siguiente lámina consolida la visión inicial de requerimientos, flujo, módulos y pantallas. Es un mockup conceptual para validar estructura y jerarquía de información; no representa todavía el diseño visual definitivo de la interfaz.
+
+14. Proceso detallado por escenario
+14.1 Escenario A – Ingreso y distribución de 1.000 g
+Prestige Gold recibe 1.000 g del material definido y lo pesa en la Balanza Madre.
+El sistema crea el movimiento de entrada y actualiza el inventario de Oficina Madre.
+El operador decide distribuir, por ejemplo, 200 g a Colmenares, 200 g a Jasmine, 200 g a Alex/otro taller configurado y 400 g a Camilo.
+Cada salida se registra individualmente con taller, peso, orden o propósito y responsable.
+El inventario global sigue mostrando 1.000 g bajo control de Prestige Gold, pero distribuido entre ubicaciones/custodias.
+Cada taller ve únicamente la cantidad que le fue entregada y confirma recepción.
+Prestige Gold puede consultar en cualquier momento quién tiene cada gramo y para qué producción fue asignado.
+14.2 Escenario B – Fabricación de hilo por Javier
+Prestige Gold crea una orden para fabricar hilo y define cantidad objetivo.
+El sistema calcula oro 24K y ligas requeridas según la fórmula parametrizada.
+Se pesan y despachan los materiales a Javier.
+Javier confirma recepción, registra consumos y produce el hilo.
+El hilo regresa a Oficina Madre, se pesa y se concilia con los materiales entregados.
+Una vez aprobado, el hilo queda como inventario disponible de un nuevo material/producto intermedio.
+Prestige Gold puede redistribuir ese hilo a Colmenares, Jasmine, Camilo u otro taller que lo requiera.
+14.3 Escenario C – Alerta por falta de hilo
+Una orden de 250 g de producto requiere, según estándar, 70 g de hilo.
+Prestige Gold intenta asignar 50 g de hilo.
+El sistema detecta una insuficiencia de 20 g antes de confirmar la entrega.
+Se muestra alerta y se proponen acciones: completar desde inventario, solicitar/fabricar hilo o modificar la orden con autorización.
+La orden conserva trazabilidad de la decisión tomada.
+15. Reportes e indicadores
+Reporte / KPI
+Contenido mínimo
+Inventario global
+Material por tipo, pureza, ubicación, disponible, comprometido, en taller y en tránsito.
+Kardex de material
+Entradas, salidas, devoluciones, ajustes y saldo por material.
+Material por taller
+Qué material tiene cada taller, desde cuándo, asociado a qué orden.
+Órdenes de producción
+Estado, taller, producto, objetivo, fecha compromiso, avance y diferencias.
+Productividad mensual
+Gramos/unidades terminadas por taller, producto y período.
+Cumplimiento
+Órdenes a tiempo, retrasadas, tiempo promedio y desviación.
+Consumo vs estándar
+Consumo real comparado con estándar por producto/taller.
+Mermas y diferencias
+Cantidad, porcentaje, motivo, taller, aprobador y tendencia.
+Costos por producción
+Material, mano de obra, otros costos y costo unitario/gramo.
+Rentabilidad
+Ingresos, costos, gastos y utilidad por mes, producto, cliente y taller.
+Clientes y abonos
+Ventas, saldos, abonos de dinero, aportes de material y movimientos.
+Auditoría
+Movimientos críticos por usuario, fecha, acción y antes/después cuando aplique.
+Catálogo técnico de modelos
+Ficha por producto/modelo con fotos, pesos de referencia, diámetro, medidas, ley/pureza y variables configurables; control de versiones.
+Trazabilidad visual
+Historial/mosaico por orden o prenda con fotografías y videos de las diferentes etapas de fabricación.
+Control de ley/pureza
+Resultados de verificación por recepción, producto, modelo, taller, responsable, fecha y estado de conformidad.
+
+16. Requerimientos no funcionales
+ID
+Categoría
+Definición
+RNF-001
+Usabilidad
+Interfaz simple, orientada a operación y apta para tablet/computador; taller con flujo mínimo de pasos.
+RNF-002
+Responsive
+Las funciones de taller deberán operar correctamente en móvil/tablet.
+RNF-003
+Trazabilidad
+Cada transacción crítica debe conservar usuario, fecha/hora, origen, destino y referencia.
+RNF-004
+Seguridad
+Autenticación, autorización por rol y aislamiento de información entre talleres.
+RNF-005
+Integridad
+Los movimientos aprobados no deberán borrarse físicamente; usar anulaciones/reversos.
+RNF-006
+Disponibilidad
+El sistema deberá preservar operación confiable durante el horario productivo acordado.
+RNF-007
+Rendimiento
+Consultas operativas y capturas de movimientos deben responder de forma ágil bajo el volumen esperado.
+RNF-008
+Escalabilidad
+Permitir crecimiento en talleres, materiales, productos, clientes y volumen sin rediseño funcional.
+RNF-009
+Evidencia multimedia
+Soportar almacenamiento, reproducción y consulta de fotografías, videos y documentos asociados a operaciones, con trazabilidad por orden, etapa, producto/modelo y usuario.
+RNF-010
+Respaldo
+Definir copias de seguridad y mecanismos de recuperación antes de salida a producción.
+RNF-011
+Gestión multimedia
+Optimizar carga y consulta de fotos/videos para móvil, preservando calidad suficiente, metadatos básicos y asociación confiable con la orden sin degradar el flujo operativo.
+
+17. Criterios de aceptación de la primera fase
+ID
+Criterio
+CA-001
+Registrar un material en la Balanza Madre y verlo reflejado en inventario.
+CA-002
+Distribuir material entre dos o más talleres y consultar el saldo por taller sin perder el total global.
+CA-003
+Crear una orden y detectar automáticamente insuficiencia de un insumo según estándar.
+CA-004
+Permitir al taller confirmar recepción de material y registrar avance con fotografías y videos obligatorios desde su acceso; evidencias visibles en línea de tiempo/mosaico de la orden.
+CA-005
+Registrar producto terminado con peso, evidencia visual y variables técnicas del modelo, devolverlo a Oficina Madre y alimentar/actualizar su ficha técnica cuando corresponda.
+CA-006
+Conciliar entregado, consumido, sobrante, terminado y diferencias antes de cierre.
+CA-007
+Impedir que un taller vea información de otro taller.
+CA-008
+Registrar una diferencia de peso y exigir justificación/aprobación.
+CA-009
+Registrar abono monetario y aporte de material de un cliente como operaciones diferenciadas, incluyendo aportes de material posteriores a la fabricación y conservando ley/pureza, peso y operación asociada.
+CA-010
+Obtener reporte de productividad mensual por taller.
+CA-011
+Obtener rentabilidad consolidada a partir de ventas, materiales, mano de obra aprobada y gastos.
+CA-012
+Agregar un taller nuevo desde administración sin modificación de código funcional.
+CA-013
+Recibir una pieza terminada, registrar resultado de verificación de ley/pureza y bloquear la aprobación si el control requerido no ha sido realizado o no cumple la tolerancia definida.
+CA-014
+Impedir el despacho a cliente de una pieza que no tenga aprobación de control de calidad y de ley/pureza cuando aplique.
+CA-015
+Crear una ficha de catálogo técnico por modelo con foto, peso, diámetro, medidas y variables configurables, conservando versiones posteriores.
+CA-016
+Consultar el mosaico/historial visual completo de una prenda u orden con fotos y videos ordenados por etapa de fabricación.
+
+18. Supuestos y decisiones pendientes
+El nombre operativo del sistema/oficina se adopta como “Prestige Gold”, sujeto a confirmación final de marca.
+Los códigos TC, TJ, TJV y TCA son sugeridos y deberán confirmarse o parametrizarse.
+El nombre “Alex/Ales” aparece de forma variable en los mensajes; el sistema no dependerá de un nombre fijo y se dará de alta como taller cuando el cliente confirme la denominación correcta.
+Los productos “Gucci”, “Van Cleef/Van Cliff” u otras denominaciones comerciales deberán validarse como categorías internas y su uso comercial será responsabilidad del cliente.
+Las fórmulas exactas de aleación y equivalencias por quilataje deben ser entregadas/validadas por el cliente antes de parametrizar alertas de balance metalúrgico.
+Las tolerancias de peso y merma por proceso aún deben definirse.
+La estructura definitiva de mano de obra queda preparada, pero tarifas y reglas de cálculo se aprobarán en una etapa posterior.
+La marca/modelo/protocolo de la balanza debe definirse para confirmar la integración técnica.
+19. Riesgos operativos que el sistema debe mitigar
+Riesgo
+Control propuesto
+Pérdida de trazabilidad del metal
+Movimientos por ubicación, orden, taller, peso y responsable.
+Diferencias entre peso entregado y recibido
+Pesaje de salida/retorno y conciliación obligatoria.
+Producción detenida por falta de insumos
+Estándares de consumo y alertas de suficiencia.
+Información verbal/no verificable
+Confirmaciones digitales, fotos, observaciones y bitácora.
+Costos no controlados de talleres
+Propuesta de mano de obra + aprobación previa a contabilidad.
+Inventario “fantasma” en talleres
+Custodia por taller y reportes de material pendiente.
+Acceso cruzado a información
+Roles y aislamiento por taller.
+Cambios históricos sin evidencia
+Reversos/ajustes en vez de eliminación y auditoría.
+Desconocimiento de rentabilidad real
+Consolidación de material, mano de obra, gastos e ingresos.
+Producto terminado con ley/pureza fuera de estándar
+Verificación obligatoria de ley/pureza en recepción, tolerancias parametrizadas y aprobación antes de inventario terminado/despacho.
+Falta de evidencia del proceso de fabricación
+Fotos/videos obligatorios por etapas y mosaico visual asociado a cada orden/prenda.
+
+20. Roadmap sugerido
+Etapa
+Objetivo
+Entregable principal
+Fase 0 – Parametrización
+Confirmar catálogos, talleres, materiales, productos, fórmulas, tolerancias y balanza.
+Matriz maestra aprobada.
+Fase 1 – Núcleo de control
+Entradas, balanza, inventario, talleres, órdenes, despachos, recepciones y control de ley/calidad.
+Trazabilidad completa de materiales y liberación controlada de producto.
+Fase 2 – Portal de talleres
+Recepción, avances, consumos, fotos/videos obligatorios, mosaico de fabricación, solicitudes y producto terminado.
+Colaboración digital con talleres + historia visual de elaboración.
+Fase 3 – Finanzas
+Abonos, ingresos, egresos, costos, mano de obra, utilidad.
+Control financiero operativo.
+Fase 4 – Analítica
+KPIs, productividad, rentabilidad, alertas y reportes ejecutivos.
+Tablero gerencial.
+Fase 5 – Optimización
+Automatizaciones, logística avanzada e integraciones adicionales.
+Escalamiento empresarial.
+
+21. Matriz de aprobación del cliente
+El cliente debe revisar especialmente los puntos marcados a continuación. La firma o aceptación formal indica conformidad con el alcance funcional de esta versión, no con una interfaz visual definitiva ni con valores económicos aún no parametrizados.
+Tema
+Aprobación / observaciones
+Modelo Oficina Madre + talleres
+____________________________________________
+Control por gramos y Balanza Madre
+____________________________________________
+Flujo de órdenes y custodia de materiales
+____________________________________________
+Portal de talleres y evidencias
+____________________________________________
+Conciliación de producción y diferencias
+____________________________________________
+Clientes, abonos y materiales de clientes
+____________________________________________
+Contabilidad operativa y rentabilidad
+____________________________________________
+Indicadores y productividad
+____________________________________________
+Alcance Fase 1 / elementos posteriores
+____________________________________________
+Evidencia foto/video y mosaico de fabricación
+____________________________________________
+Catálogo técnico por modelo
+____________________________________________
+Control de ley/pureza y calidad
+____________________________________________
+Abonos de clientes en dinero y material
+____________________________________________
+
+ 
+Cliente / Empresa
+Prestige Gold
+Nombre del aprobador
+____________________________________________
+Firma / Aceptación
+____________________________________________
+Fecha
+____________________________________________
+22. Conclusión
+La arquitectura funcional propuesta convierte la Oficina Madre Prestige Gold en un centro de control integral. El valor central del sistema es la trazabilidad: cada gramo, cada entrega, cada recepción, cada evidencia visual, cada verificación de ley/pureza, cada orden, cada costo y cada ingreso debe poder explicarse desde su origen hasta su resultado final. La versión 1.1 incorpora además la construcción del catálogo técnico por modelo, el mosaico de fabricación de cada prenda y el control explícito de abonos de clientes en dinero y material. Con esta especificación queda establecida una base estructurada para continuar con diseño UX/UI detallado, definición técnica e implementación progresiva.
+Siguiente paso después de la aprobación: Realizar la parametrización de catálogos y reglas pendientes, confirmar el modelo/protocolo de la balanza, definir el método de verificación de ley/pureza y sus tolerancias, y producir prototipos de alta fidelidad de las pantallas P02 a P20 antes de iniciar desarrollo.
+
