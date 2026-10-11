@@ -39,23 +39,36 @@ async function upsert<T extends object>(
   return repo.save(repo.create({ ...where, ...data } as never) as T);
 }
 
-export async function seedBase(ds: DataSource, adminPassword: string) {
+/** Roles del sistema y sus permisos: se sincronizan en cada arranque (actualizaciones de versión). */
+async function syncRoles(m: EntityManager) {
+  for (const [code, r] of Object.entries(SYSTEM_ROLES)) {
+    await upsert(
+      m,
+      Role,
+      { code },
+      {
+        name: r.name,
+        description: r.description,
+        permissions: r.permissions,
+        isSystem: true,
+        isWorkshopRole: !!r.isWorkshopRole,
+        active: true,
+      },
+    );
+  }
+}
+
+export function syncSystemRoles(ds: DataSource) {
+  return ds.transaction((m) => syncRoles(m));
+}
+
+export async function seedBase(
+  ds: DataSource,
+  adminPassword: string,
+  adminEmail = 'admin@prestigegold.local',
+) {
   await ds.transaction(async (m) => {
-    for (const [code, r] of Object.entries(SYSTEM_ROLES)) {
-      await upsert(
-        m,
-        Role,
-        { code },
-        {
-          name: r.name,
-          description: r.description,
-          permissions: r.permissions,
-          isSystem: true,
-          isWorkshopRole: !!r.isWorkshopRole,
-          active: true,
-        },
-      );
-    }
+    await syncRoles(m);
     for (const u of D.UNITS) await upsert(m, Unit, { code: u.code }, u);
     for (const c of D.CATEGORIES)
       await upsert(m, MaterialCategory, { code: c.code }, c);
@@ -77,13 +90,14 @@ export async function seedBase(ds: DataSource, adminPassword: string) {
         User,
         m.create(User, {
           username: 'admin',
-          email: 'admin@prestigegold.local',
+          email: adminEmail,
           fullName: 'Administrador Prestige Gold',
           roleId: role.id,
           passwordHash: await argon2.hash(adminPassword, {
             type: argon2.argon2id,
           }),
-          mustChangePassword: false,
+          // En producción la contraseña inicial es de un solo uso: se cambia al primer ingreso.
+          mustChangePassword: process.env.NODE_ENV === 'production',
         }),
       );
     }

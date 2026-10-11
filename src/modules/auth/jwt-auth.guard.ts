@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -9,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
 import { ClsService } from 'nestjs-cls';
 import { IS_PUBLIC_KEY } from '../../common/decorators/public.decorator';
+import { ALLOW_PENDING_PASSWORD_KEY } from '../../common/decorators/allow-pending-password.decorator';
 import type { RequestContextStore } from '../../common/context/request-context';
 import { AuthUserService } from './auth-user.service';
 
@@ -55,6 +57,18 @@ export class JwtAuthGuard implements CanActivate {
     const user = await this.authUsers.resolve(payload.sub, payload.sid);
     (req as Request & { user: unknown }).user = user;
     if (this.cls.isActive()) this.cls.set('user', user);
+    // Contraseña inicial/restablecida: solo puede ver su perfil, cambiarla o cerrar sesión.
+    if (
+      user.mustChangePassword &&
+      !this.reflector.getAllAndOverride<boolean>(ALLOW_PENDING_PASSWORD_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ])
+    )
+      throw new ForbiddenException({
+        error: 'PASSWORD_CHANGE_REQUIRED',
+        message: 'Debe cambiar su contraseña antes de continuar',
+      });
     return true;
   }
 }

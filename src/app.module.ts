@@ -17,6 +17,7 @@ import { AuditAccessInterceptor } from './modules/audit/audit-access.interceptor
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/jwt-auth.guard';
 import { HealthModule } from './modules/health/health.module';
+import { SetupModule } from './modules/setup/setup.module';
 import { MailModule } from './modules/mail/mail.module';
 import { SequencesModule } from './modules/sequences/sequences.module';
 import { UsersModule } from './modules/users/users.module';
@@ -83,6 +84,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     AlertsModule,
     ReportsModule,
     HealthModule,
+    SetupModule,
   ],
   providers: [
     // Orden: rate limit → autenticación → autorización por permisos.

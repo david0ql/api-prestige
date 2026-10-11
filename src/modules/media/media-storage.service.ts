@@ -7,7 +7,15 @@ import {
   timingSafeEqual,
 } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { mkdir, rename, stat, unlink, copyFile } from 'node:fs/promises';
+import {
+  mkdir,
+  readdir,
+  rename,
+  stat,
+  unlink,
+  copyFile,
+} from 'node:fs/promises';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { join, resolve } from 'node:path';
 import sharp from 'sharp';
 
@@ -30,6 +38,22 @@ export class MediaStorageService implements OnModuleInit {
 
   async onModuleInit() {
     await mkdir(join(this.root, 'tmp'), { recursive: true });
+  }
+
+  /** Temporales de cargas interrumpidas (caída a mitad de subida): se eliminan si tienen más de 1 hora. */
+  @Cron(CronExpression.EVERY_HOUR)
+  async cleanTmp(maxAgeMs = 3600_000): Promise<number> {
+    let removed = 0;
+    const dir = this.tmpDir;
+    for (const name of await readdir(dir).catch(() => [] as string[])) {
+      const path = join(dir, name);
+      const info = await stat(path).catch(() => null);
+      if (info?.isFile() && Date.now() - info.mtimeMs > maxAgeMs) {
+        await unlink(path).catch(() => undefined);
+        removed++;
+      }
+    }
+    return removed;
   }
 
   get tmpDir() {

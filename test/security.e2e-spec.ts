@@ -52,6 +52,62 @@ describe('Prestige Gold · seguridad, autenticación y administración (e2e)', (
       expect(a.body.message).toBe(b.body.message);
     });
 
+    it('con contraseña inicial obligatoria solo permite perfil, cambio de clave y salida hasta cambiarla', async () => {
+      const roles = (await api.get('admin', '/api/roles')).body;
+      expect(
+        (
+          await api.post('admin', '/api/users', {
+            username: 'inicial.e2e',
+            email: 'inicial@e2e.local',
+            fullName: 'Usuario Clave Inicial',
+            password: 'Inicial.12345',
+            roleId: byCode(roles, 'OPERATIONS').id,
+            mustChangePassword: true,
+          })
+        ).status,
+      ).toBe(201);
+      const login = await api.http
+        .post('/api/auth/login')
+        .send({ username: 'inicial.e2e', password: 'Inicial.12345' });
+      expect(login.status).toBe(200);
+      expect(login.body.user.mustChangePassword).toBe(true);
+      const auth = `Bearer ${login.body.accessToken}`;
+      const blocked = await api.http
+        .get('/api/orders')
+        .set('Authorization', auth);
+      expect(blocked.status).toBe(403);
+      expect(blocked.body.error).toBe('PASSWORD_CHANGE_REQUIRED');
+      expect(
+        (
+          await api.http
+            .get('/api/inventory/summary')
+            .set('Authorization', auth)
+        ).status,
+      ).toBe(403);
+      const me = await api.http.get('/api/auth/me').set('Authorization', auth);
+      expect(me.status).toBe(200);
+      expect(me.body.mustChangePassword).toBe(true);
+      expect(
+        (
+          await api.http
+            .post('/api/auth/change-password')
+            .set('Authorization', auth)
+            .send({
+              currentPassword: 'Inicial.12345',
+              newPassword: 'Propia.Segura.2026',
+            })
+        ).status,
+      ).toBe(204);
+      const after = await api.http
+        .get('/api/orders')
+        .set('Authorization', auth);
+      expect(after.status).toBe(200);
+      expect(
+        (await api.http.get('/api/auth/me').set('Authorization', auth)).body
+          .mustChangePassword,
+      ).toBe(false);
+    });
+
     it('bloquea la cuenta tras 5 intentos fallidos y el administrador puede desbloquearla', async () => {
       const roles = (await api.get('admin', '/api/roles')).body;
       const created = await api.post('admin', '/api/users', {

@@ -1,4 +1,7 @@
 import { INestApplication } from '@nestjs/common';
+import { readdir, utimes, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { MediaStorageService } from '../src/modules/media/media-storage.service';
 import { Api, byCode, createApp, mp4File, pngFile } from './helpers';
 
 /**
@@ -1063,7 +1066,9 @@ describe('Prestige Gold · cobertura auditada contra el documento (e2e)', () => 
         })
       ).body.value,
     ).toBe('Prestige Gold S.A.S.');
-    const originalScale = (await api.get('operaciones', '/api/weighings/config')).body;
+    const originalScale = (
+      await api.get('operaciones', '/api/weighings/config')
+    ).body;
     const scale = {
       baudRate: 2400,
       dataBits: 7,
@@ -1138,7 +1143,9 @@ describe('Prestige Gold · cobertura auditada contra el documento (e2e)', () => 
     await api.put('admin', '/api/parameters/company.name', {
       value: 'Prestige Gold',
     });
-    await api.put('admin', '/api/parameters/scale.config', { value: originalScale });
+    await api.put('admin', '/api/parameters/scale.config', {
+      value: originalScale,
+    });
   });
 
   it('[RF-031] [CA-010] productividad mensual por taller con gramos, unidades y órdenes cumplidas', async () => {
@@ -1609,6 +1616,37 @@ describe('Prestige Gold · cobertura auditada contra el documento (e2e)', () => 
         details: { status },
       });
     }
+  });
+
+  it('[RNF-011] una carga rechazada no deja archivos temporales y los temporales viejos se limpian solos', async () => {
+    const storage = app.get(MediaStorageService);
+    const before = await readdir(storage.tmpDir);
+    const bad = await api.upload(
+      'operaciones',
+      { purpose: 'NO_EXISTE' },
+      await pngFile(),
+    );
+    expect(bad.status).toBe(400);
+    const noOrder = await api.upload(
+      'taller.tc',
+      { purpose: 'STAGE' },
+      await pngFile(),
+    );
+    expect(noOrder.status).toBe(400);
+    await new Promise((r) => setTimeout(r, 100));
+    expect(
+      (await readdir(storage.tmpDir)).filter((f) => !before.includes(f)),
+    ).toEqual([]);
+    const stale = join(storage.tmpDir, 'carga-interrumpida');
+    await writeFile(stale, 'x');
+    const old = new Date(Date.now() - 2 * 3600_000);
+    await utimes(stale, old, old);
+    const fresh = join(storage.tmpDir, 'carga-en-curso');
+    await writeFile(fresh, 'x');
+    expect(await storage.cleanTmp()).toBeGreaterThanOrEqual(1);
+    const left = await readdir(storage.tmpDir);
+    expect(left).not.toContain('carga-interrumpida');
+    expect(left).toContain('carga-en-curso');
   });
 
   it('[REP-15] cada reporte de la sección 15 entrega su contenido mínimo', async () => {

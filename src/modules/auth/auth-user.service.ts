@@ -69,6 +69,7 @@ export class AuthUserService {
       workshopCode: user.workshop?.code ?? null,
       // Un usuario de taller nunca hereda permisos de oficina aunque su rol los tenga.
       permissions: user.role.permissions,
+      mustChangePassword: user.mustChangePassword,
       sessionId,
     };
   }

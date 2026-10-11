@@ -10,6 +10,8 @@ export interface AuthUser {
   workshopId: string | null;
   workshopCode: string | null;
   permissions: string[];
+  /** Contraseña inicial o restablecida por un administrador: debe cambiarla antes de operar. */
+  mustChangePassword: boolean;
   sessionId: string;
 }
 

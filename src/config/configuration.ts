@@ -33,6 +33,7 @@ export interface AppConfig {
   security: {
     swaggerEnabled: boolean;
     trustProxy: boolean;
+    cookieSecure: boolean;
     maxFailedLogins: number;
     lockMinutes: number;
   };
@@ -92,6 +93,8 @@ export default (): AppConfig => {
         nodeEnv !== 'production',
       ),
       trustProxy: bool(process.env.TRUST_PROXY, false),
+      // Cookie de sesión «Secure»: obligatoria con HTTPS; desactívela solo en despliegues sin TLS (red interna).
+      cookieSecure: bool(process.env.COOKIE_SECURE, nodeEnv === 'production'),
       maxFailedLogins: parseInt(process.env.MAX_FAILED_LOGINS ?? '5', 10),
       lockMinutes: parseInt(process.env.LOCK_MINUTES ?? '15', 10),
     },

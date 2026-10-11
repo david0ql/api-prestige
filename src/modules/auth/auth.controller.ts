@@ -14,6 +14,7 @@ import { Throttle } from '@nestjs/throttler';
 import type { CookieOptions, Request, Response } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import { AllowPendingPasswordChange } from '../../common/decorators/allow-pending-password.decorator';
 import type { AuthUser } from '../../common/types/auth-user';
 import { AuthService, IssuedSession } from './auth.service';
 import {
@@ -40,7 +41,7 @@ export class AuthController {
     const prefix = this.config.get<string>('apiPrefix', 'api');
     return {
       httpOnly: true,
-      secure: this.config.get<string>('nodeEnv') === 'production',
+      secure: this.config.get<boolean>('security.cookieSecure', true),
       sameSite: 'strict',
       path: `/${prefix}/auth`,
       expires,
@@ -108,6 +109,7 @@ export class AuthController {
     }
   }
 
+  @AllowPendingPasswordChange()
   @Post('logout')
   @HttpCode(204)
   @ApiBearerAuth()
@@ -119,6 +121,7 @@ export class AuthController {
     res.clearCookie(REFRESH_COOKIE, this.cookieOptions());
   }
 
+  @AllowPendingPasswordChange()
   @Get('me')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Usuario actual, rol, taller y permisos' })
@@ -126,6 +129,7 @@ export class AuthController {
     return user;
   }
 
+  @AllowPendingPasswordChange()
   @Post('change-password')
   @HttpCode(204)
   @ApiBearerAuth()

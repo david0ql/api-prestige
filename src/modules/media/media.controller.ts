@@ -15,6 +15,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UploadCleanupInterceptor } from './upload-cleanup.interceptor';
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import type { Response } from 'express';
@@ -83,6 +84,7 @@ export class MediaController {
         fields: 20,
       },
     }),
+    UploadCleanupInterceptor,
   )
   upload(
     @UploadedFile() file: Express.Multer.File,
